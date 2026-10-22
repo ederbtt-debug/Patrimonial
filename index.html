@@ -1,2 +1,994 @@
-# dashboard-patrimonial
-Gestão
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Patrimonial & Metas - Bonette</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        body { background-color: #f1f5f9; color: #1e293b; font-family: system-ui, -apple-system, sans-serif; }
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #3b82f6;
+            border-color: #3b82f6;
+        }
+        .modo-privado input {
+            color: transparent !important;
+            text-shadow: 0 0 8px rgba(30, 41, 59, 0.7);
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-3 sm:px-6 lg:px-8 overflow-x-hidden">
+    <div class="max-w-7xl mx-auto space-y-8">
+        
+        <!-- Header Moderno -->
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col lg:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-md shadow-blue-500/20">
+                    💎
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">Painel Patrimonial & Metas</h1>
+                    <p class="text-xs text-slate-500 font-medium">Gestão inteligente de ativos, projeção persistente e planejamento de objetivos</p>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas de Topo -->
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Botão Olhinho de Privacidade -->
+                <button id="btnPrivacidade" onclick="togglePrivacidade()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm">
+                    <span id="iconeOlho">👁️</span> <span id="textoOlho">Ocultar Valores</span>
+                </button>
+                <button onclick="abrirModalAtivo()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-5 py-2.5 rounded-2xl text-xs font-bold shadow-md shadow-emerald-500/20 transition flex items-center gap-2 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                    + Novo Ativo
+                </button>
+                <button onclick="abrirModalData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                    <span>📅</span> Adicionar Data
+                </button>
+                <button onclick="resetarDados()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer" title="Restaurar padrão">
+                    🔄
+                </button>
+            </div>
+        </div>
+
+        <!-- Painel de Lançamento Rápido no Topo -->
+        <div id="painelLancamento" class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <span>⚡</span> Lançamento Rápido de Valores (Formato Moeda)
+                </h3>
+                <span class="text-xs text-slate-400">Digite o valor normalmente (ex: 50000.50) formatado como moeda</span>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">1. Selecione a Data</label>
+                    <select id="selectDataLancamento" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-800 focus:bg-white transition cursor-pointer"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">2. Selecione o Ativo / Bem</label>
+                    <select id="selectAtivoLancamento" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-800 focus:bg-white transition cursor-pointer"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">3. Novo Valor (R$)</label>
+                    <input type="text" id="inputValorLancamento" placeholder="R$ 0,00" oninput="mascaraMoedaInput(this)" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-800 focus:bg-white transition text-right">
+                </div>
+                <div>
+                    <button onclick="salvarLancamentoRapido()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-2xl text-xs font-bold shadow-md shadow-emerald-500/20 transition cursor-pointer flex items-center justify-center gap-2">
+                        <span>💾</span> Salvar na Planilha
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de Planejador de Metas -->
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 sm:p-8 rounded-3xl shadow-xl space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h3 class="text-lg font-black tracking-tight flex items-center gap-2">
+                        <span>🎯</span> Planejador de Metas & Aporte Mensal Necessário
+                    </h3>
+                    <p class="text-xs text-slate-400">Defina onde quer chegar e descubra exatamente o esforço mensal necessário</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="salvarMeta()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-2xl text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-2 cursor-pointer">
+                        <span>💾</span> Salvar Meta
+                    </button>
+                    <div class="bg-white/10 px-4 py-2 rounded-2xl backdrop-blur-sm border border-white/10">
+                        <span class="block text-[10px] text-slate-400 uppercase font-bold">Progresso Atual</span>
+                        <span id="metaProgressoPerc" class="text-base font-black text-emerald-400">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles de Meta -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">Valor da Meta (R$)</label>
+                    <input type="text" id="inputMetaValor" oninput="mascaraMoedaInput(this); atualizarCalculoMeta();" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm font-bold text-white focus:bg-white/20 transition text-right">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">Data Alvo para Conclusão (DD/MM/AAAA)</label>
+                    <input type="text" id="inputMetaData" oninput="atualizarCalculoMeta()" placeholder="31/12/2027" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm font-bold text-white focus:bg-white/20 transition text-center">
+                </div>
+            </div>
+
+            <!-- Cards de Resultados da Meta -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
+                    <span class="text-xs text-slate-400 font-semibold">Patrimônio Atual</span>
+                    <h4 id="metaPatrimonioAtual" class="text-xl font-black text-white mt-1">R$ 0,00</h4>
+                </div>
+                <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
+                    <span class="text-xs text-slate-400 font-semibold">Falta Faltante (Gap)</span>
+                    <h4 id="metaFaltaValor" class="text-xl font-black text-amber-400 mt-1">R$ 0,00</h4>
+                </div>
+                <div class="bg-emerald-500/20 border border-emerald-500/30 p-4 rounded-2xl">
+                    <span class="text-xs text-emerald-300 font-bold">Aporte Mensal Necessário</span>
+                    <h4 id="metaAporteMensal" class="text-2xl font-black text-emerald-400 mt-1">R$ 0,00 / mês</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Gráficos em Destaque -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+            <!-- Gráfico 1: Patrimônio com Projeção 12 Meses -->
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between lg:col-span-2">
+                <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Evolução do Patrimônio & Tendência (Próximos 12 Meses)</h3>
+                        <p class="text-xs text-slate-500">Histórico real comparado com a linha de projeção futura persistida</p>
+                    </div>
+                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-xl shadow-sm">Projeção Futura 📈</span>
+                </div>
+                <div class="relative w-full h-96">
+                    <canvas id="chartPatrimonio"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="mb-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Rentabilidade Diária (R$/dia)</h3>
+                        <p class="text-xs text-slate-500">Ganho financeiro médio por período</p>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl">Performance</span>
+                </div>
+                <div class="relative w-full h-80">
+                    <canvas id="chartSaldoDia"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="mb-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Ganho Acumulado (Valor/ACU)</h3>
+                        <p class="text-xs text-slate-500">Montante acumulado de valorização</p>
+                    </div>
+                    <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-xl">Acumulado</span>
+                </div>
+                <div class="relative w-full h-80">
+                    <canvas id="chartValorAcu"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="mb-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Alocação Atual por Categoria</h3>
+                        <p class="text-xs text-slate-500">Distribuição dos ativos na última data</p>
+                    </div>
+                    <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-xl">Portfólio</span>
+                </div>
+                <div class="relative w-full h-80 flex items-center justify-center">
+                    <canvas id="chartAlocacao"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div class="mb-4 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Evolução por Instituição / Ativo</h3>
+                        <p class="text-xs text-slate-500">Comparativo individual ao longo do tempo</p>
+                    </div>
+                    <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl">Detalhado</span>
+                </div>
+                <div class="relative w-full h-80">
+                    <canvas id="chartInstituicoes"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela Completa (Abaixo dos Gráficos para Consulta) -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-sm font-bold text-slate-900">Planilha Consolidada de Ativos</h3>
+                <button onclick="abrirModalAtivo()" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3.5 py-2 rounded-xl cursor-pointer">
+                    + Adicionar Novo Ativo
+                </button>
+            </div>
+            <div class="overflow-x-auto w-full">
+                <table id="tabelaPatrimonio" class="w-full text-left border-collapse text-xs sm:text-sm">
+                    <thead id="tabelaHead" class="bg-slate-900 text-white"></thead>
+                    <tbody id="tabelaBody" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Adicionar Data -->
+    <div id="modalData" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-900">Adicionar Nova Data</h3>
+            <p class="text-xs text-slate-500">Insira a data no formato DD/MM/AAAA (ex: 20/10/2026)</p>
+            <input type="text" id="inputNovaData" placeholder="20/10/2026" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold focus:bg-white transition">
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="fecharModalData()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition cursor-pointer">Cancelar</button>
+                <button onclick="confirmarAdicionarData()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition cursor-pointer">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Ativo -->
+    <div id="modalAtivo" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-900">Adicionar Novo Ativo / Bem</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Nome do Ativo</label>
+                    <input type="text" id="inputNomeAtivo" placeholder="Ex: XP, Ações, Imóvel" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-semibold focus:bg-white transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Categoria</label>
+                    <select id="selectCatAtivo" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-semibold focus:bg-white transition">
+                        <option value="Inv">Investimentos (Inv)</option>
+                        <option value="Outros">Outros</option>
+                        <option value="Bens">Bens</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="fecharModalAtivo()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition cursor-pointer">Cancelar</button>
+                <button onclick="confirmarAdicionarAtivo()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold transition cursor-pointer">Adicionar Ativo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dadosIniciais = {
+            datas: ["10/07/2026", "13/07/2026", "23/07/2026", "28/09/2026", "30/09/2026", "06/10/2026", "13/10/2026"],
+            meta: { valor: 1000000.00, dataAlvo: "31/12/2027" },
+            projecaoSalva: null,
+            linhas: [
+                { nome: "Brasil", cat: "Inv", valores: [46000.00, 46025.00, 46204.04, 49242.99, 49290.01, 49884.40, 49980.03] },
+                { nome: "Mercado", cat: "Inv", valores: [1176.00, 1177.52, 1192.30, 316.14, 323.42, 333.31, 333.92] },
+                { nome: "Nu", cat: "Inv", valores: [6100.00, 6102.55, 8435.18, 3559.72, 3563.87, 3572.20, 3580.55] },
+                { nome: "C6", cat: "Inv", valores: [1100.00, 1105.31, 1110.06, 727.38, 728.13, 729.64, 731.16] },
+                { nome: "BITI", cat: "Inv", valores: [300.00, 353.12, 363.04, 635.68, 647.41, 632.87, 615.98] },
+                
+                { nome: "LE", cat: "Outros", valores: [5000.00, 5000.00, 3000.00, 3000.00, 3000.00, 3000.00, 3000.00] },
+                { nome: "Thyado", cat: "Outros", valores: [4000.00, 4000.00, 4000.00, 4000.00, 4000.00, 4000.00, 4000.00] },
+                
+                { nome: "Carro", cat: "Bens", valores: [115000.00, 115000.00, 115000.00, 115000.00, 115000.00, 115000.00, 115000.00] },
+                { nome: "Lote", cat: "Bens", valores: [60000.00, 60000.00, 60000.00, 60000.00, 60000.00, 60000.00, 60000.00] },
+                { nome: "FGTS", cat: "Bens", valores: [147837.21, 147837.21, 147837.21, 151787.96, 151787.96, 151787.96, 151787.96] }
+            ]
+        };
+
+        let estado = JSON.parse(localStorage.getItem('patrimonio_bonette_v11')) || dadosIniciais;
+        if (!estado.meta) estado.meta = { valor: 1000000.00, dataAlvo: "31/12/2027" };
+        if (estado.projecaoSalva === undefined) estado.projecaoSalva = null;
+        let privado = false;
+        let charts = {};
+
+        function salvar() {
+            localStorage.setItem('patrimonio_bonette_v11', JSON.stringify(estado));
+        }
+
+        function resetarDados() {
+            if(confirm("Deseja restaurar os dados originais?")) {
+                estado = JSON.parse(JSON.stringify(dadosIniciais));
+                salvar();
+                renderizarTudo();
+            }
+        }
+
+        function togglePrivacidade() {
+            privado = !privado;
+            const btn = document.getElementById('btnPrivacidade');
+            const icone = document.getElementById('iconeOlho');
+            const texto = document.getElementById('textoOlho');
+            
+            if(privado) {
+                icone.innerText = "🙈";
+                texto.innerText = "Mostrar Valores";
+                document.body.classList.add('modo-privado');
+            } else {
+                icone.innerText = "👁️";
+                texto.innerText = "Ocultar Valores";
+                document.body.classList.remove('modo-privado');
+            }
+            renderizarTudo();
+        }
+
+        function formatarMoeda(val) {
+            if (val === null || val === undefined || isNaN(val)) return "R$ 0,00";
+            if (privado) return "R$ •••••••";
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function parseMoedaToNumber(str) {
+            if (!str) return 0;
+            let limpo = str.replace(/[^\d,]/g, '').replace(',', '.');
+            let num = parseFloat(limpo);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function mascaraMoedaInput(input) {
+            let valor = input.value.replace(/\D/g, "");
+            if (valor === "") {
+                input.value = "";
+                return;
+            }
+            let numero = (parseInt(valor) / 100).toFixed(2);
+            let partes = numero.split(".");
+            partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            input.value = "R$ " + partes[0] + "," + partes[1];
+        }
+
+        function numeroToMoedaStr(num) {
+            if (isNaN(num)) num = 0;
+            if (privado) return "R$ •••••••";
+            let fixed = num.toFixed(2);
+            let partes = fixed.split(".");
+            partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return "R$ " + partes[0] + "," + partes[1];
+        }
+
+        function parseDataBR(str) {
+            const partes = str.split('/');
+            if(partes.length !== 3) return new Date();
+            return new Date(partes[2], partes[1] - 1, partes[0]);
+        }
+
+        function abrirModalData() {
+            document.getElementById('inputNovaData').value = "20/10/2026";
+            document.getElementById('modalData').classList.remove('hidden');
+        }
+
+        function fecharModalData() {
+            document.getElementById('modalData').classList.add('hidden');
+        }
+
+        function confirmarAdicionarData() {
+            let novaData = document.getElementById('inputNovaData').value.trim();
+            if(!novaData) return;
+            estado.datas.push(novaData);
+            estado.linhas.forEach(l => {
+                let ultimo = l.valores[l.valores.length - 1] || 0;
+                l.valores.push(ultimo);
+            });
+            atualizarProjecaoPersistida();
+            salvar();
+            fecharModalData();
+            renderizarTudo();
+        }
+
+        function abrirModalAtivo() {
+            document.getElementById('inputNomeAtivo').value = "";
+            document.getElementById('modalAtivo').classList.remove('hidden');
+        }
+
+        function fecharModalAtivo() {
+            document.getElementById('modalAtivo').classList.add('hidden');
+        }
+
+        function confirmarAdicionarAtivo() {
+            let nome = document.getElementById('inputNomeAtivo').value.trim();
+            if(!nome) {
+                alert("Informe o nome do ativo.");
+                return;
+            }
+            let cat = document.getElementById('selectCatAtivo').value;
+            let novosValores = estado.datas.map(() => 0);
+            estado.linhas.push({ nome, cat, valores: novosValores });
+            salvar();
+            fecharModalAtivo();
+            renderizarTudo();
+            alert(`✅ Ativo "${nome}" adicionado com sucesso!`);
+        }
+
+        function atualizarSelectsLancamento() {
+            const selectData = document.getElementById('selectDataLancamento');
+            const selectAtivo = document.getElementById('selectAtivoLancamento');
+            
+            if(!selectData || !selectAtivo) return;
+
+            const selectedDataVal = selectData.value;
+            const selectedAtivoVal = selectAtivo.value;
+
+            selectData.innerHTML = '';
+            estado.datas.forEach((d, idx) => {
+                selectData.innerHTML += `<option value="${idx}">${d}</option>`;
+            });
+            if(selectedDataVal && selectData.querySelector(`option[value="${selectedDataVal}"]`)) {
+                selectData.value = selectedDataVal;
+            } else {
+                selectData.selectedIndex = estado.datas.length - 1;
+            }
+
+            selectAtivo.innerHTML = '';
+            estado.linhas.forEach((l, idx) => {
+                selectAtivo.innerHTML += `<option value="${idx}">${l.nome} (${l.cat})</option>`;
+            });
+            if(selectedAtivoVal && selectAtivo.querySelector(`option[value="${selectedAtivoVal}"]`)) {
+                selectAtivo.value = selectedAtivoVal;
+            }
+
+            atualizarValorInputRapido();
+            selectData.onchange = atualizarValorInputRapido;
+            selectAtivo.onchange = atualizarValorInputRapido;
+        }
+
+        function atualizarValorInputRapido() {
+            const dIdx = document.getElementById('selectDataLancamento').value;
+            const aIdx = document.getElementById('selectAtivoLancamento').value;
+            if(dIdx === undefined || aIdx === undefined) return;
+            const val = estado.linhas[aIdx].valores[dIdx] || 0;
+            document.getElementById('inputValorLancamento').value = numeroToMoedaStr(val);
+        }
+
+        function salvarLancamentoRapido() {
+            const dIdx = parseInt(document.getElementById('selectDataLancamento').value);
+            const aIdx = parseInt(document.getElementById('selectAtivoLancamento').value);
+            const valStr = document.getElementById('inputValorLancamento').value;
+            const val = parseMoedaToNumber(valStr);
+
+            if(isNaN(val)) {
+                alert("Por favor, informe um valor monetário válido.");
+                return;
+            }
+
+            estado.linhas[aIdx].valores[dIdx] = val;
+            atualizarProjecaoPersistida();
+            salvar();
+            renderizarTudo();
+            alert("✅ Lançamento e projeção salvos com sucesso!");
+        }
+
+        function inicializarMetaUI() {
+            if(estado.meta) {
+                document.getElementById('inputMetaValor').value = numeroToMoedaStr(estado.meta.valor);
+                document.getElementById('inputMetaData').value = estado.meta.dataAlvo || "31/12/2027";
+            }
+            atualizarCalculoMeta();
+        }
+
+        function atualizarCalculoMeta() {
+            const valInputStr = document.getElementById('inputMetaValor').value;
+            const valInput = parseMoedaToNumber(valInputStr);
+            const dataInput = document.getElementById('inputMetaData').value.trim() || "31/12/2027";
+
+            let totalGeral = estado.datas.map((_, dIdx) => estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0));
+            let patrimonioAtual = totalGeral[totalGeral.length - 1] || 0;
+            let falta = Math.max(0, valInput - patrimonioAtual);
+
+            let perc = valInput > 0 ? Math.min(100, (patrimonioAtual / valInput) * 100) : 0;
+
+            let dataAtualObj = parseDataBR(estado.datas[estado.datas.length - 1]);
+            let dataMetaObj = parseDataBR(dataInput);
+
+            let diffAnos = dataMetaObj.getFullYear() - dataAtualObj.getFullYear();
+            let diffMeses = dataMetaObj.getMonth() - dataAtualObj.getMonth();
+            let mesesRestantes = (diffAnos * 12) + diffMeses;
+            if (mesesRestantes < 1) mesesRestantes = 1;
+
+            let aporteMensal = falta / mesesRestantes;
+
+            document.getElementById('metaProgressoPerc').innerText = perc.toFixed(1) + "%";
+            document.getElementById('metaPatrimonioAtual').innerText = formatarMoeda(patrimonioAtual);
+            document.getElementById('metaFaltaValor').innerText = formatarMoeda(falta);
+            document.getElementById('metaAporteMensal').innerText = formatarMoeda(aporteMensal) + " / mês";
+        }
+
+        function salvarMeta() {
+            const valInputStr = document.getElementById('inputMetaValor').value;
+            const valInput = parseMoedaToNumber(valInputStr);
+            const dataInput = document.getElementById('inputMetaData').value.trim() || "31/12/2027";
+
+            estado.meta = {
+                valor: valInput,
+                dataAlvo: dataInput
+            };
+            salvar();
+            atualizarCalculoMeta();
+            alert("🎯 Meta e Data Alvo salvas com sucesso!");
+        }
+
+        function removerItem(idx) {
+            if(confirm(`Deseja excluir o ativo ${estado.linhas[idx].nome}?`)) {
+                estado.linhas.splice(idx, 1);
+                atualizarProjecaoPersistida();
+                salvar();
+                renderizarTudo();
+            }
+        }
+
+        function removerData(idx) {
+            if(estado.datas.length <= 1) {
+                alert("Você precisa manter ao menos uma data.");
+                return;
+            }
+            if(confirm(`Deseja remover a data ${estado.datas[idx]}?`)) {
+                estado.datas.splice(idx, 1);
+                estado.linhas.forEach(l => {
+                    l.valores.splice(idx, 1);
+                });
+                atualizarProjecaoPersistida();
+                salvar();
+                renderizarTudo();
+            }
+        }
+
+        function atualizarProjecaoPersistida() {
+            const labelsHistorico = estado.datas;
+            let totalGeral = labelsHistorico.map((_, dIdx) => {
+                return estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0);
+            });
+
+            let taxaCrescimentoDiaria = 0;
+            if (labelsHistorico.length >= 2) {
+                let dInicio = parseDataBR(labelsHistorico[0]);
+                let dFim = parseDataBR(labelsHistorico[labelsHistorico.length - 1]);
+                let totalDias = Math.max(1, (dFim - dInicio) / (1000 * 60 * 60 * 24));
+                let diffPatrimonio = totalGeral[totalGeral.length - 1] - totalGeral[0];
+                taxaCrescimentoDiaria = diffPatrimonio / totalDias;
+            }
+
+            let ultimoValorReal = totalGeral[totalGeral.length - 1];
+            let ultimaDataObj = parseDataBR(labelsHistorico[labelsHistorico.length - 1]);
+            
+            let projLabels = [];
+            let projValores = [];
+
+            for (let m = 1; m <= 4; m++) {
+                let mesesAdicionais = m * 3;
+                let diasAdicionais = mesesAdicionais * 30;
+                
+                let novaDataObj = new Date(ultimaDataObj);
+                novaDataObj.setMonth(novaDataObj.getMonth() + mesesAdicionais);
+                
+                let diaStr = String(novaDataObj.getDate()).padStart(2, '0');
+                let mesStr = String(novaDataObj.getMonth() + 1).padStart(2, '0');
+                let anoStr = novaDataObj.getFullYear();
+                
+                projLabels.push(`${diaStr}/${mesStr}/${anoStr} (+${mesesAdicionais}m)`);
+                let valorProjetado = ultimoValorReal + (taxaCrescimentoDiaria * diasAdicionais);
+                projValores.push(valorProjetado);
+            }
+
+            estado.projecaoSalva = {
+                labels: projLabels,
+                valores: projValores
+            };
+        }
+
+        function renderizarTudo() {
+            renderizarTabela();
+            atualizarGraficos();
+            atualizarSelectsLancamento();
+            atualizarCalculoMeta();
+        }
+
+        function renderizarTabela() {
+            const thead = document.getElementById('tabelaHead');
+            const tbody = document.getElementById('tabelaBody');
+
+            let headHTML = `<tr><th class="py-3 px-4 font-semibold">Onde / Ativo</th>`;
+            estado.datas.forEach((data, index) => {
+                headHTML += `<th class="py-3 px-2 text-center font-semibold">
+                    <div class="flex items-center justify-center gap-1">
+                        <span>${data}</span>
+                        ${estado.datas.length > 1 ? `<button onclick="removerData(${index})" class="text-red-300 hover:text-red-100 font-bold px-1 cursor-pointer" title="Remover data">&times;</button>` : ''}
+                    </div>
+                </th>`;
+            });
+            headHTML += `<th class="py-3 px-2 text-center font-semibold w-12">Ações</th></tr>`;
+            thead.innerHTML = headHTML;
+
+            const categorias = [
+                { nome: "Investimentos", cat: "Inv" },
+                { nome: "Outros", cat: "Outros" },
+                { nome: "Bens", cat: "Bens" }
+            ];
+
+            let bodyHTML = '';
+
+            categorias.forEach(c => {
+                const itensCat = estado.linhas.filter(l => l.cat === c.cat);
+                
+                itensCat.forEach((item) => {
+                    const globalIdx = estado.linhas.indexOf(item);
+                    bodyHTML += `<tr class="hover:bg-slate-50 transition">
+                        <td class="py-2.5 px-4 font-medium text-slate-700 flex items-center justify-between">
+                            <span>${item.nome}</span>
+                            <button onclick="removerItem(${globalIdx})" class="text-slate-400 hover:text-red-600 text-xs cursor-pointer" title="Excluir ativo">🗑️</button>
+                        </td>`;
+                    estado.datas.forEach((_, dIdx) => {
+                        const val = item.valores[dIdx] || 0;
+                        const formattedVal = numeroToMoedaStr(val);
+                        bodyHTML += `<td class="py-2.5 px-2 text-center">
+                            <input type="text" value="${formattedVal}" 
+                                class="w-32 sm:w-36 text-right bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs sm:text-sm focus:bg-white transition"
+                                onfocus="this.value = '${val.toFixed(2).replace('.', ',')}'"
+                                oninput="mascaraMoedaInput(this)"
+                                onblur="atualizarValorTabela(${globalIdx}, ${dIdx}, this.value)">
+                        </td>`;
+                    });
+                    bodyHTML += `<td class="text-center"></td></tr>`;
+                });
+
+                let subValores = estado.datas.map((_, dIdx) => {
+                    return itensCat.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0);
+                });
+
+                bodyHTML += `<tr class="bg-amber-50 font-bold border-t border-amber-100">
+                    <td class="py-3 px-4 text-amber-900">Subtotal ${c.nome}</td>`;
+                subValores.forEach(v => {
+                    bodyHTML += `<td class="py-3 px-2 text-center text-amber-900">${formatarMoeda(v)}</td>`;
+                });
+                bodyHTML += `<td></td></tr>`;
+            });
+
+            let totalGeral = estado.datas.map((_, dIdx) => {
+                return estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0);
+            });
+
+            bodyHTML += `<tr class="bg-emerald-600 text-white font-bold">
+                <td class="py-3 px-4 uppercase tracking-wider">TOTAL GERAL</td>`;
+            totalGeral.forEach(v => {
+                bodyHTML += `<td class="py-3 px-2 text-center">${formatarMoeda(v)}</td>`;
+            });
+            bodyHTML += `<td></td></tr>`;
+
+            let saldos = [null];
+            let diasArray = [null];
+            let saldoDia = [null];
+            let diasAcu = [0];
+            let valorAcu = [0];
+            let mediaDia = [0];
+
+            let acuDiasVal = 0;
+            let acuValVal = 0;
+
+            for(let i=1; i<estado.datas.length; i++) {
+                const diffVal = totalGeral[i] - totalGeral[i-1];
+                saldos.push(diffVal);
+
+                const d1 = parseDataBR(estado.datas[i-1]);
+                const d2 = parseDataBR(estado.datas[i]);
+                const diffTime = Math.abs(d2 - d1);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                diasArray.push(diffDays);
+
+                const sDia = diffDays > 0 ? diffVal / diffDays : 0;
+                saldoDia.push(sDia);
+
+                acuDiasVal += diffDays;
+                diasAcu.push(acuDiasVal);
+
+                acuValVal += diffVal;
+                valorAcu.push(acuValVal);
+
+                const mDia = acuDiasVal > 0 ? acuValVal / acuDiasVal : 0;
+                mediaDia.push(mDia);
+            }
+
+            bodyHTML += `<tr class="bg-slate-100 text-slate-700 font-semibold border-t border-slate-200">
+                <td class="py-2.5 px-4">Saldo</td>`;
+            saldos.forEach(s => {
+                bodyHTML += `<td class="py-2.5 px-2 text-center">${s !== null ? formatarMoeda(s) : '-'}</td>`;
+            });
+            bodyHTML += `<td></td></tr>`;
+
+            bodyHTML += `<tr class="bg-slate-50 text-slate-700">
+                <td class="py-2.5 px-4">Dias</td>`;
+            diasArray.forEach(d => {
+                bodyHTML += `<td class="py-2.5 px-2 text-center">${d !== null ? d : '-'}</td>`;
+            });
+            bodyHTML += `<td></td></tr>`;
+
+            bodyHTML += `<tr class="bg-slate-100 text-slate-700 font-semibold">
+                <td class="py-2.5 px-4">Saldo/dia</td>`;
+            saldoDia.forEach(sd => {
+                bodyHTML += `<td class="py-2.5 px-2 text-center text-emerald-700">${sd !== null ? formatarMoeda(sd) : '-'}</td>`;
+            });
+            bodyHTML += `<td></td></tr>`;
+
+            bodyHTML += `<tr class="bg-slate-200 text-slate-800 font-bold">
+                <td class="py-2.5 px-4">Dias/ACU</td>`;
+            diasAcu.forEach(da => {
+                bodyHTML += `<td class="py-2.5 px-2 text-center">${da}</td>`;
+            });
+            bodyHTML += `<td></td></tr>`;
+
+            bodyHTML += `<tr class="bg-slate-200 text-slate-800 font-bold">
+                <td class="py-2.5 px-4">Valor/ACU</td>`;
+            valorAcu.forEach(va => {
+                bodyHTML += `<td class="py-2.5 px-2 text-center">${formatarMoeda(va)}</td>`;
+            });
+            bodyHTML += `<td></td></tr>`;
+
+            bodyHTML += `<tr class="bg-slate-200 text-slate-800 font-bold">
+                <td class="py-2.5 px-4">Média/Dia</td>`;
+            mediaDia.forEach(md => {
+                bodyHTML += `<td class="py-2.5 px-2 text-center text-emerald-800">${formatarMoeda(md)}</td>`;
+            });
+            bodyHTML += `<td></td></tr>`;
+
+            tbody.innerHTML = bodyHTML;
+        }
+
+        function atualizarValorTabela(itemIdx, dataIdx, valorStr) {
+            let num = parseMoedaToNumber(valorStr);
+            estado.linhas[itemIdx].valores[dataIdx] = num;
+            atualizarProjecaoPersistida();
+            salvar();
+            renderizarTudo();
+        }
+
+        Chart.register(ChartDataLabels);
+
+        function atualizarGraficos() {
+            const labelsHistorico = estado.datas;
+            let totalGeral = labelsHistorico.map((_, dIdx) => {
+                return estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0);
+            });
+
+            if (!estado.projecaoSalva) {
+                atualizarProjecaoPersistida();
+            }
+
+            let projecaoLabels = [...labelsHistorico, ...estado.projecaoSalva.labels];
+            let projecaoHistoricoDados = [...totalGeral, ...new Array(estado.projecaoSalva.labels.length).fill(null)];
+            
+            let projecaoTendenciaDados = new Array(labelsHistorico.length).fill(null);
+            projecaoTendenciaDados[projecaoTendenciaDados.length - 1] = totalGeral[totalGeral.length - 1];
+            estado.projecaoSalva.valores.forEach(v => projecaoTendenciaDados.push(v));
+
+            // Gráfico 1: Patrimônio com Projeção 12 Meses Persistida
+            if(charts.patrimonio) charts.patrimonio.destroy();
+            charts.patrimonio = new Chart(document.getElementById('chartPatrimonio'), {
+                type: 'line',
+                data: {
+                    labels: projecaoLabels,
+                    datasets: [
+                        {
+                            label: 'Patrimônio Real',
+                            data: projecaoHistoricoDados,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Projeção de Tendência (12 Meses Persistida)',
+                            data: projecaoTendenciaDados,
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.05)',
+                            borderWidth: 3,
+                            borderDash: [6, 6],
+                            fill: false,
+                            tension: 0.2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 11, weight: 'bold' } } },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => context.dataset.label + ': ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed.y))
+                            }
+                        },
+                        datalabels: {
+                            align: 'top',
+                            formatter: (val) => val ? (privado ? 'R$ •••••' : formatarMoeda(val)) : '',
+                            font: { size: 9, weight: 'bold' },
+                            color: '#1e293b'
+                        }
+                    },
+                    scales: {
+                        y: { ticks: { callback: (v) => privado ? 'R$ •••' : formatarMoeda(v) } }
+                    }
+                }
+            });
+
+            let saldoDia = [0];
+            let valorAcu = [0];
+            let acuValVal = 0;
+
+            for(let i=1; i<labelsHistorico.length; i++) {
+                const diffVal = totalGeral[i] - totalGeral[i-1];
+                const d1 = parseDataBR(labelsHistorico[i-1]);
+                const d2 = parseDataBR(labelsHistorico[i]);
+                const diffDays = Math.max(1, Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)));
+                saldoDia.push(diffDays > 0 ? diffVal / diffDays : 0);
+                acuValVal += diffVal;
+                valorAcu.push(acuValVal);
+            }
+
+            // Gráfico 2: Saldo/dia
+            if(charts.saldoDia) charts.saldoDia.destroy();
+            charts.saldoDia = new Chart(document.getElementById('chartSaldoDia'), {
+                type: 'bar',
+                data: {
+                    labels: labelsHistorico,
+                    datasets: [{
+                        label: 'R$/dia',
+                        data: saldoDia,
+                        backgroundColor: '#10b981',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => 'R$/dia: ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed.y))
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (val) => val ? (privado ? 'R$ •••••' : formatarMoeda(val)) : '',
+                            font: { size: 10, weight: 'bold' },
+                            color: '#047857'
+                        }
+                    },
+                    scales: {
+                        y: { ticks: { callback: (v) => privado ? 'R$ •••' : formatarMoeda(v) } }
+                    }
+                }
+            });
+
+            // Gráfico 3: Ganho Acumulado
+            if(charts.valorAcu) charts.valorAcu.destroy();
+            charts.valorAcu = new Chart(document.getElementById('chartValorAcu'), {
+                type: 'line',
+                data: {
+                    labels: labelsHistorico,
+                    datasets: [{
+                        label: 'Ganho Acumulado',
+                        data: valorAcu,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => 'Ganho Acumulado: ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed.y))
+                            }
+                        },
+                        datalabels: {
+                            align: 'top',
+                            formatter: (val) => val ? (privado ? 'R$ •••••' : formatarMoeda(val)) : 'R$ 0,00',
+                            font: { size: 10, weight: 'bold' },
+                            color: '#6d28d9'
+                        }
+                    },
+                    scales: {
+                        y: { ticks: { callback: (v) => privado ? 'R$ •••' : formatarMoeda(v) } }
+                    }
+                }
+            });
+
+            // Gráfico 4: Alocação Categoria
+            const ultimoIdx = labelsHistorico.length - 1;
+            const subInv = estado.linhas.filter(l => l.cat === 'Inv').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0);
+            const subOutros = estado.linhas.filter(l => l.cat === 'Outros').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0);
+            const subBens = estado.linhas.filter(l => l.cat === 'Bens').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0);
+
+            if(charts.alocacao) charts.alocacao.destroy();
+            charts.alocacao = new Chart(document.getElementById('chartAlocacao'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Investimentos', 'Outros', 'Bens'],
+                    datasets: [{
+                        data: [subInv, subOutros, subBens],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => context.label + ': ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed))
+                            }
+                        },
+                        datalabels: {
+                            formatter: (val, ctx) => {
+                                let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                let percentage = (val * 100 / sum).toFixed(1) + "%";
+                                return percentage;
+                            },
+                            color: '#fff',
+                            font: { weight: 'bold', size: 11 }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico 5: Evolução por Instituição
+            const coresInstituicoes = [
+                '#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', 
+                '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'
+            ];
+
+            const datasetsInstituicoes = estado.linhas.map((item, idx) => ({
+                label: item.nome,
+                data: item.valores,
+                borderColor: coresInstituicoes[idx % coresInstituicoes.length],
+                backgroundColor: coresInstituicoes[idx % coresInstituicoes.length],
+                borderWidth: 2.5,
+                tension: 0.2,
+                fill: false
+            }));
+
+            if(charts.instituicoes) charts.instituicoes.destroy();
+            charts.instituicoes = new Chart(document.getElementById('chartInstituicoes'), {
+                type: 'line',
+                data: {
+                    labels: labelsHistorico,
+                    datasets: datasetsInstituicoes
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => context.dataset.label + ': ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed.y))
+                            }
+                        },
+                        datalabels: { display: false }
+                    },
+                    scales: {
+                        y: { ticks: { callback: (v) => privado ? 'R$ •••' : formatarMoeda(v) } }
+                    }
+                }
+            });
+        }
+
+        renderizarTudo();
+        inicializarMetaUI();
+    </script>
+</body>
+</html>
