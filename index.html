@@ -279,14 +279,13 @@
         let privado = false;
         let charts = {};
 
-        // Função para salvar localmente e sincronizar com o Google Sheets
+        // Função para salvar localmente e sincronizar com o Google Sheets (com text/plain para evitar CORS)
         async function salvar() {
             localStorage.setItem('patrimonio_bonette_v11', JSON.stringify(estado));
             try {
                 await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(estado)
                 });
             } catch (e) {
@@ -302,8 +301,6 @@
                 if (dadosNuvem && dadosNuvem.datas && dadosNuvem.linhas) {
                     estado = dadosNuvem;
                     localStorage.setItem('patrimonio_bonette_v11', JSON.stringify(estado));
-                    renderizarTudo();
-                    inicializarMetaUI();
                 }
             } catch (e) {
                 console.log("A usar dados locais salvos no navegador.");
@@ -1011,7 +1008,7 @@
             });
         }
 
-        // Iniciar carregando da nuvem (ou fallback local) e renderizando
+        // Inicializar carregando da nuvem e renderizando
         carregarDaNuvem().then(() => {
             renderizarTudo();
             inicializarMetaUI();
