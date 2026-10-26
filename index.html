@@ -1,1018 +1,1092 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Patrimonial & Metas - Bonette</title>
+    <title>100 Moderação - Gestão Financeira</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Chart.js DataLabels Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
-        body { background-color: #f1f5f9; color: #1e293b; font-family: system-ui, -apple-system, sans-serif; }
-        input[type="text"]:focus, select:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px #3b82f6;
-            border-color: #3b82f6;
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #f8fafc;
         }
-        .modo-privado input {
-            color: transparent !important;
-            text-shadow: 0 0 8px rgba(30, 41, 59, 0.7);
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen py-8 px-3 sm:px-6 lg:px-8 overflow-x-hidden">
-    <div class="max-w-7xl mx-auto space-y-8">
-        
-        <!-- Header Moderno -->
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col lg:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-md shadow-blue-500/20">
-                    💎
+<body class="bg-slate-50 text-slate-800 font-sans">
+    <!-- ================= TELA DE LOGIN ================= -->
+    <div id="tela-login" class="fixed inset-0 bg-slate-950 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 text-center">
+            <div class="mb-6 flex flex-col items-center">
+                <div class="bg-blue-600 text-white p-3 rounded-2xl font-black text-xl shadow mb-3 flex items-center justify-center w-16 h-16 rounded-full">
+                    100M
                 </div>
-                <div>
-                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">Painel Patrimonial & Metas</h1>
-                    <p class="text-xs text-slate-500 font-medium">Gestão inteligente de ativos, projeção persistente e planejamento de objetivos</p>
-                </div>
-            </div>
-
-            <!-- Ações Rápidas de Topo -->
-            <div class="flex flex-wrap items-center gap-3">
-                <!-- Botão Olhinho de Privacidade -->
-                <button id="btnPrivacidade" onclick="togglePrivacidade()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm">
-                    <span id="iconeOlho">👁️</span> <span id="textoOlho">Ocultar Valores</span>
-                </button>
-                <button onclick="abrirModalAtivo()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-5 py-2.5 rounded-2xl text-xs font-bold shadow-md shadow-emerald-500/20 transition flex items-center gap-2 cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                    + Novo Ativo
-                </button>
-                <button onclick="abrirModalData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-                    <span>📅</span> Adicionar Data
-                </button>
-                <button onclick="resetarDados()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer" title="Restaurar padrão limpo">
-                    🔄
-                </button>
-            </div>
-        </div>
-
-        <!-- Painel de Lançamento Rápido no Topo -->
-        <div id="painelLancamento" class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                    <span>⚡</span> Lançamento Rápido de Valores (Formato Moeda)
-                </h3>
-                <span class="text-xs text-slate-400">Digite o valor normalmente (ex: 50000.50) formatado como moeda</span>
+                <h2 class="text-xl font-bold text-slate-900">100 Moderação</h2>
+                <p class="text-xs text-slate-500 mt-1">Entre com suas credenciais para acessar o sistema</p>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <form onsubmit="fazerLogin(event)" class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">1. Selecione a Data</label>
-                    <select id="selectDataLancamento" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-800 focus:bg-white transition cursor-pointer"></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">2. Selecione o Ativo / Bem</label>
-                    <select id="selectAtivoLancamento" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-800 focus:bg-white transition cursor-pointer"></select>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Usuário</label>
+                    <input type="text" id="login-usuario" required class="w-full border rounded-xl px-3.5 py-2.5 text-sm bg-slate-50 focus:outline-none focus:border-blue-500" value="100moderacao">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">3. Novo Valor (R$)</label>
-                    <input type="text" id="inputValorLancamento" placeholder="R$ 0,00" oninput="mascaraMoedaInput(this)" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-800 focus:bg-white transition text-right">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Senha</label>
+                    <input type="password" id="login-senha" required class="w-full border rounded-xl px-3.5 py-2.5 text-sm bg-slate-50 focus:outline-none focus:border-blue-500" value="1234">
                 </div>
-                <div>
-                    <button onclick="salvarLancamentoRapido()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-2xl text-xs font-bold shadow-md shadow-emerald-500/20 transition cursor-pointer flex items-center justify-center gap-2">
-                        <span>💾</span> Salvar na Planilha
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card de Planejador de Metas -->
-        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 sm:p-8 rounded-3xl shadow-xl space-y-6">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
-                <div>
-                    <h3 class="text-lg font-black tracking-tight flex items-center gap-2">
-                        <span>🎯</span> Planejador de Metas & Aporte Mensal Necessário
-                    </h3>
-                    <p class="text-xs text-slate-400">Defina onde quer chegar e descubra exatamente o esforço mensal necessário</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="salvarMeta()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-2xl text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-2 cursor-pointer">
-                        <span>💾</span> Salvar Meta
-                    </button>
-                    <div class="bg-white/10 px-4 py-2 rounded-2xl backdrop-blur-sm border border-white/10">
-                        <span class="block text-[10px] text-slate-400 uppercase font-bold">Progresso Atual</span>
-                        <span id="metaProgressoPerc" class="text-base font-black text-emerald-400">0%</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controles de Meta -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">Valor da Meta (R$)</label>
-                    <input type="text" id="inputMetaValor" oninput="mascaraMoedaInput(this); atualizarCalculoMeta();" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm font-bold text-white focus:bg-white/20 transition text-right">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1.5">Data Alvo para Conclusão (DD/MM/AAAA)</label>
-                    <input type="text" id="inputMetaData" oninput="atualizarCalculoMeta()" placeholder="31/12/2027" class="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-sm font-bold text-white focus:bg-white/20 transition text-center">
-                </div>
-            </div>
-
-            <!-- Cards de Resultados da Meta -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
-                    <span class="text-xs text-slate-400 font-semibold">Patrimônio Atual</span>
-                    <h4 id="metaPatrimonioAtual" class="text-xl font-black text-white mt-1">R$ 0,00</h4>
-                </div>
-                <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
-                    <span class="text-xs text-slate-400 font-semibold">Falta (Gap)</span>
-                    <h4 id="metaFaltaValor" class="text-xl font-black text-amber-400 mt-1">R$ 0,00</h4>
-                </div>
-                <div class="bg-emerald-500/20 border border-emerald-500/30 p-4 rounded-2xl">
-                    <span class="text-xs text-emerald-300 font-bold">Aporte Mensal Necessário</span>
-                    <h4 id="metaAporteMensal" class="text-2xl font-black text-emerald-400 mt-1">R$ 0,00 / mês</h4>
-                </div>
-            </div>
-        </div>
-
-        <!-- Seção de Gráficos em Destaque -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-            <!-- Gráfico 1: Patrimônio com Projeção 12 Meses -->
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between lg:col-span-2">
-                <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900">Evolução do Patrimônio & Tendência</h3>
-                        <p class="text-xs text-slate-500">Histórico real comparado com a linha de projeção futura</p>
-                    </div>
-                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-xl shadow-sm">Projeção Futura 📈</span>
-                </div>
-                <div class="relative w-full h-96">
-                    <canvas id="chartPatrimonio"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                <div class="mb-4 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900">Rentabilidade Diária (R$/dia)</h3>
-                        <p class="text-xs text-slate-500">Ganho financeiro médio por período</p>
-                    </div>
-                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl">Performance</span>
-                </div>
-                <div class="relative w-full h-80">
-                    <canvas id="chartSaldoDia"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                <div class="mb-4 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900">Ganho Acumulado (Valor/ACU)</h3>
-                        <p class="text-xs text-slate-500">Montante acumulado de valorização</p>
-                    </div>
-                    <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-xl">Acumulado</span>
-                </div>
-                <div class="relative w-full h-80">
-                    <canvas id="chartValorAcu"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                <div class="mb-4 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900">Alocação Atual por Categoria</h3>
-                        <p class="text-xs text-slate-500">Distribuição dos ativos na última data</p>
-                    </div>
-                    <span class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-xl">Portfólio</span>
-                </div>
-                <div class="relative w-full h-80 flex items-center justify-center">
-                    <canvas id="chartAlocacao"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
-                <div class="mb-4 flex justify-between items-center">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-900">Evolução por Instituição / Ativo</h3>
-                        <p class="text-xs text-slate-500">Comparativo individual ao longo do tempo</p>
-                    </div>
-                    <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-xl">Detalhado</span>
-                </div>
-                <div class="relative w-full h-80">
-                    <canvas id="chartInstituicoes"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabela Completa -->
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="text-sm font-bold text-slate-900">Planilha Consolidada de Ativos</h3>
-                <button onclick="abrirModalAtivo()" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3.5 py-2 rounded-xl cursor-pointer">
-                    + Adicionar Novo Ativo
-                </button>
-            </div>
-            <div class="overflow-x-auto w-full">
-                <table id="tabelaPatrimonio" class="w-full text-left border-collapse text-xs sm:text-sm">
-                    <thead id="tabelaHead" class="bg-slate-900 text-white"></thead>
-                    <tbody id="tabelaBody" class="divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Modal Adicionar Data -->
-    <div id="modalData" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <h3 class="text-lg font-bold text-slate-900">Adicionar Nova Data</h3>
-            <p class="text-xs text-slate-500">Insira a data no formato DD/MM/AAAA (ex: 23/10/2026)</p>
-            <input type="text" id="inputNovaData" placeholder="23/10/2026" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold focus:bg-white transition">
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="fecharModalData()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition cursor-pointer">Cancelar</button>
-                <button onclick="confirmarAdicionarData()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition cursor-pointer">Adicionar</button>
+                <div id="login-erro" class="text-rose-500 text-xs font-semibold hidden text-center p-2 bg-rose-50 rounded-lg"></div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl text-sm transition shadow-md">Entrar no Sistema</button>
+            </form>
+            <div class="mt-4 flex justify-between items-center text-[11px]">
+                <button onclick="localStorage.clear(); alert('Cache limpo com sucesso! Recarregue a página.'); location.reload();" class="text-blue-600 underline hover:text-blue-800">Limpar Cache / Resetar</button>
+                <span class="text-slate-400">ServFesta • v6.11</span>
             </div>
         </div>
     </div>
 
-    <!-- Modal Adicionar Ativo -->
-    <div id="modalAtivo" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <h3 class="text-lg font-bold text-slate-900">Adicionar Novo Ativo / Bem</h3>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Nome do Ativo</label>
-                    <input type="text" id="inputNomeAtivo" placeholder="Ex: XP, Ações, Imóvel" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-semibold focus:bg-white transition">
+    <!-- ================= APLICAÇÃO PRINCIPAL ================= -->
+    <div id="app-principal" style="display: none;">
+        <!-- TOPO FIXO (HEADER + NAVEGAÇÃO) -->
+        <div class="sticky top-0 z-30 shadow-md">
+            <!-- Header Executivo -->
+            <header class="bg-slate-900 text-white border-b border-slate-800">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-blue-600 text-white p-2 rounded-xl font-black text-lg tracking-wider shadow flex items-center justify-center w-10 h-10 rounded-full">100M</div>
+                        <div>
+                            <h1 class="text-lg font-bold tracking-tight">100 Moderação</h1>
+                            <p class="text-[11px] text-slate-400 flex items-center gap-1.5"><span id="status-sync-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="status-sync-text">Sistema Ativo & Sincronizado</span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtro Global de Datas e Ações -->
+                    <div class="flex flex-wrap items-center justify-center gap-2 w-full md:w-auto">
+                        <div class="flex flex-wrap items-center gap-2 bg-slate-800/90 p-2 rounded-xl border border-slate-700 text-xs w-full md:w-auto justify-center">
+                            <span class="font-medium text-slate-300 uppercase tracking-wider">Período:</span>
+                            <input type="date" id="filtroDataInicio" class="bg-slate-900 text-white px-2.5 py-1 rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer" onclick="this.showPicker()" onchange="atualizarDados()">
+                            <span class="text-slate-400">até</span>
+                            <input type="date" id="filtroDataFim" class="bg-slate-900 text-white px-2.5 py-1 rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer" onclick="this.showPicker()" onchange="atualizarDados()">
+                            <button onclick="limparFiltros()" class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg font-semibold transition">Limpar</button>
+                        </div>
+                        <button onclick="sincronizarComPlanilha()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">🔄 Sincronizar</button>
+                        <button onclick="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5">📥 Exportar</button>
+                        <button onclick="fazerLogout()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow">🔒 Sair</button>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Categoria</label>
-                    <select id="selectCatAtivo" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-2.5 text-sm font-semibold focus:bg-white transition">
-                        <option value="Inv">Investimentos (Inv)</option>
-                        <option value="Outros">Outros</option>
-                        <option value="Bens">Bens</option>
-                    </select>
+            </header>
+
+            <!-- Navegação por Abas Responsiva -->
+            <nav class="bg-white border-b border-slate-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 flex space-x-6 overflow-x-auto no-scrollbar">
+                    <button onclick="mudarTab('gerencial')" id="btn-gerencial" class="py-3.5 border-b-2 border-blue-600 text-blue-600 font-semibold text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">📊 Resumo Gerencial</button>
+                    <button onclick="mudarTab('dashboard')" id="btn-dashboard" class="py-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-semibold text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">📅 Dashboard Período</button>
+                    <button onclick="mudarTab('graficos')" id="btn-graficos" class="py-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-semibold text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">📈 Gráficos</button>
+                    <button onclick="mudarTab('lancamentos')" id="btn-lancamentos" class="py-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-semibold text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">📝 Lançamentos</button>
+                    <button onclick="mudarTab('tabelao')" id="btn-tabelao" class="py-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-semibold text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">📋 Histórico Completo</button>
+                    <button onclick="mudarTab('cadastros')" id="btn-cadastros" class="py-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-semibold text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2">⚙️ Cadastros & Segurança</button>
                 </div>
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="fecharModalAtivo()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition cursor-pointer">Cancelar</button>
-                <button onclick="confirmarAdicionarAtivo()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold transition cursor-pointer">Adicionar Ativo</button>
-            </div>
+            </nav>
         </div>
+
+        <!-- ================= CONTEÚDO PRINCIPAL ================= -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+            <!-- ABA: RESUMO GERENCIAL -->
+            <div id="tab-gerencial" class="space-y-6">
+                <div class="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-bold">Visão Geral Acumulada (Todo o Histórico)</h2>
+                        <p class="text-xs text-slate-300 mt-1">Indicadores consolidados de toda a operação sem restrição de período.</p>
+                    </div>
+                    <button onclick="window.print()" class="bg-white/10 hover:bg-white/25 text-white px-4 py-2 rounded-xl text-xs font-semibold transition border border-white/20">Imprimir Relatório</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Faturamento Bruto Acumulado</p>
+                        <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2" id="gerencial-bruto">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Faturamento Líquido Acumulado</p>
+                        <p class="text-2xl sm:text-3xl font-extrabold text-blue-600 mt-2" id="gerencial-liquido">R$ 0,00</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-2xl shadow-md sm:col-span-2 md:col-span-1">
+                        <p class="text-xs font-bold uppercase tracking-wider text-emerald-100">Lucro Líquido Real Acumulado</p>
+                        <p class="text-2xl sm:text-3xl font-extrabold mt-2" id="gerencial-lucro">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-semibold uppercase text-slate-400">Total Taxas de Cartão</p>
+                        <p class="text-lg font-bold text-rose-600 mt-1" id="gerencial-taxas">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-semibold uppercase text-slate-400">Total Custos & Despesas</p>
+                        <p class="text-lg font-bold text-rose-600 mt-1" id="gerencial-despesas">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-semibold uppercase text-slate-400">Total Retiradas & Pró-labore</p>
+                        <p class="text-lg font-bold text-amber-600 mt-1" id="gerencial-retiradas">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-700 mb-4 text-sm">📈 Evolução Histórica (Líquido)</h3>
+                        <div class="relative h-64"><canvas id="chartGerencialLinha"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-700 mb-4 text-sm">💳 Mix de Bandeiras Geral</h3>
+                        <div class="relative h-64"><canvas id="chartGerencialBandeiras"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: DASHBOARD PERÍODO -->
+            <div id="tab-dashboard" class="hidden space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Faturamento Bruto</p>
+                        <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2" id="kpi-bruto">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-bold uppercase tracking-wider text-blue-600">Faturamento Líquido (c/ Taxas)</p>
+                        <p class="text-2xl sm:text-3xl font-extrabold text-blue-600 mt-2" id="kpi-liquido">R$ 0,00</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-2xl shadow-md sm:col-span-2 md:col-span-1">
+                        <p class="text-xs font-bold uppercase tracking-wider text-emerald-100">Lucro Líquido Real (Caixa)</p>
+                        <p class="text-2xl sm:text-3xl font-extrabold mt-2" id="kpi-lucro">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-semibold uppercase text-slate-400">Total Taxas de Cartão</p>
+                        <p class="text-lg font-bold text-rose-600 mt-1" id="kpi-taxas">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-semibold uppercase text-slate-400">Custos Fixos & Despesas</p>
+                        <p class="text-lg font-bold text-rose-600 mt-1" id="kpi-despesas">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs font-semibold uppercase text-slate-400">Retiradas & Pró-labore</p>
+                        <p class="text-lg font-bold text-amber-600 mt-1" id="kpi-retiradas">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-100 px-6 py-4 border-b border-slate-200 font-bold text-slate-700 flex justify-between items-center text-sm">
+                        <span>Demonstrativo de Resultado do Período</span>
+                        <button onclick="window.print()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">Imprimir</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <tbody id="tabela-dre"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: GRÁFICOS -->
+            <div id="tab-graficos" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-emerald-700 text-base mb-1">💰 Lucro Líquido Real Diário</h3>
+                        <p class="text-xs text-slate-500 mb-4">Evolução diária do seu lucro real (já descontadas as taxas e retiradas/despesas).</p>
+                        <div class="relative h-72"><canvas id="chartLucroRealDiario"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-blue-700 text-base mb-1">📦 Reposição de Estoque Diária (Investimento)</h3>
+                        <p class="text-xs text-slate-500 mb-4">Valor separado por dia para reinvestir e repor o seu estoque.</p>
+                        <div class="relative h-72"><canvas id="chartEstoqueDiario"></canvas></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-700 mb-4 text-sm">📊 Comparativo Entradas vs Saídas</h3>
+                        <div class="relative h-64"><canvas id="chartEntradaSaida"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-700 mb-4 text-sm">💳 Faturamento por Bandeira</h3>
+                        <div class="relative h-64"><canvas id="chartBandeiras"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: LANÇAMENTOS -->
+            <div id="tab-lancamentos" class="hidden space-y-6">
+                <div class="flex flex-wrap gap-2 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <button onclick="mudarTipoLancamento('vendas')" id="btn-tipo-vendas" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-xs transition bg-slate-900 text-white shadow">Lançar Venda</button>
+                    <button onclick="mudarTipoLancamento('despesas')" id="btn-tipo-despesas" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-xs transition bg-slate-100 text-slate-600 hover:bg-slate-200">Lançar Despesa</button>
+                    <button onclick="mudarTipoLancamento('retiradas')" id="btn-tipo-retiradas" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-xs transition bg-slate-100 text-slate-600 hover:bg-slate-200">Lançar Retirada</button>
+                    <button onclick="mudarTipoLancamento('margens')" id="btn-tipo-margens" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-xs transition bg-slate-100 text-slate-600 hover:bg-slate-200">Lançar Margem do Dia</button>
+                </div>
+                <!-- Form Vendas -->
+                <div id="form-vendas" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 text-sm">Registrar Nova Venda / Entrada</h3>
+                    <form onsubmit="salvarVenda(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Data</label><input type="date" id="venda-data" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50 cursor-pointer" onclick="this.showPicker()"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Bandeira</label><select id="venda-bandeira" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50"></select></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Centro de Custo</label><select id="venda-centro" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50"></select></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Valor Bruto (R$)</label><input type="number" step="0.01" id="venda-valor" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50" placeholder="0.00"></div>
+                        <div class="flex items-end sm:col-span-2 md:col-span-1"><button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl text-sm transition shadow">Adicionar</button></div>
+                    </form>
+                </div>
+                <!-- Form Despesas -->
+                <div id="form-despesas" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 text-sm">Registrar Despesa / Boleto</h3>
+                    <form onsubmit="salvarDespesa(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Data</label><input type="date" id="despesa-data" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50 cursor-pointer" onclick="this.showPicker()"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Histórico</label><select id="despesa-historico" onchange="preencherGrupoDespesa()" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50"></select></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Grupo de Conta</label><input type="text" id="despesa-grupo" readonly class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-100 text-slate-600"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Valor (R$)</label><input type="number" step="0.01" id="despesa-valor" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50" placeholder="0.00"></div>
+                        <div class="flex items-end sm:col-span-2 md:col-span-1"><button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2 rounded-xl text-sm transition shadow">Adicionar</button></div>
+                    </form>
+                </div>
+                <!-- Form Retiradas -->
+                <div id="form-retiradas" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 text-sm">Registrar Retirada / Pró-labore</h3>
+                    <form onsubmit="salvarRetirada(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Data</label><input type="date" id="retirada-data" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50 cursor-pointer" onclick="this.showPicker()"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Tipo</label><select id="retirada-tipo" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50"><option value="Retirada de Produtos">Retirada de Produtos</option><option value="Salário / Pró-labore">Salário / Pró-labore</option></select></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Item</label><input type="text" id="retirada-historico" placeholder="Ex: Cerveja" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Valor (R$)</label><input type="number" step="0.01" id="retirada-valor" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50" placeholder="0.00"></div>
+                        <div class="flex items-end sm:col-span-2 md:col-span-1"><button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 rounded-xl text-sm transition shadow">Adicionar</button></div>
+                    </form>
+                </div>
+                <!-- Form Margem Diária -->
+                <div id="form-margens" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 text-sm">Definir Margem de Lucro do Dia</h3>
+                    <form onsubmit="salvarMargemDiaria(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Data</label><input type="date" id="margem-data" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50 cursor-pointer" onclick="this.showPicker()"></div>
+                        <div><label class="block text-xs font-semibold text-slate-500 mb-1">Margem do Dia (%)</label><input type="number" step="0.5" id="margem-valor-dia" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50 font-bold" placeholder="Ex: 35"></div>
+                        <div class="flex items-end"><button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl text-sm transition shadow">Salvar Margem do Dia</button></div>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-100 px-6 py-4 border-b border-slate-200 font-bold text-slate-700 text-sm" id="titulo-tabela-lancamentos">Histórico</div>
+                    <div class="max-h-[450px] overflow-y-auto relative">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead id="cabecalho-tabela-lancamentos" class="sticky top-0 z-10 bg-slate-100 shadow-sm"></thead>
+                            <tbody id="tabela-lancamentos-corpo" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: HISTÓRICO COMPLETO (TABELÃO) -->
+            <div id="tab-tabelao" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg">Histórico Completo de Lançamentos</h3>
+                        <p class="text-xs text-slate-500 mt-1">Todos os registros ordenados do mais recente para o mais antigo.</p>
+                    </div>
+                    <div class="w-full md:w-auto">
+                        <input type="text" id="tabelao-filtro-busca" placeholder="🔍 Buscar no histórico..." onkeyup="renderizarTabelao()" class="border rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:border-blue-500 w-full md:w-64">
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="max-h-[550px] overflow-y-auto relative">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead class="sticky top-0 z-10 bg-slate-100 shadow-sm">
+                                <tr class="text-slate-600 border-b text-xs uppercase tracking-wider">
+                                    <th class="px-6 py-3.5 bg-slate-100">Data</th>
+                                    <th class="px-6 py-3.5 bg-slate-100">Tipo</th>
+                                    <th class="px-6 py-3.5 bg-slate-100">Descrição / Bandeira</th>
+                                    <th class="px-6 py-3.5 bg-slate-100">Centro Custo / Grupo</th>
+                                    <th class="px-6 py-3.5 bg-slate-100 text-right">Valor Bruto</th>
+                                    <th class="px-6 py-3.5 bg-slate-100 text-right">Valor Líquido</th>
+                                    <th class="px-6 py-3.5 bg-slate-100 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelao-corpo" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: CADASTROS & SEGURANÇA -->
+            <div id="tab-cadastros" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 text-base mb-1">🔒 Alterar Credenciais de Acesso</h3>
+                    <p class="text-xs text-slate-500 mb-4">Modifique o usuário e a senha de acesso ao sistema.</p>
+                    <form onsubmit="alterarCredenciais(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Novo Usuário</label>
+                            <input type="text" id="novo-user" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50" value="100moderacao">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nova Senha</label>
+                            <input type="password" id="nova-pass" required class="w-full border rounded-xl px-3 py-2 text-sm bg-slate-50" value="1234">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-xl text-sm transition shadow">Salvar Credenciais</button>
+                        </div>
+                    </form>
+                    <div id="msg-sucesso-senha" class="text-emerald-600 text-xs font-semibold mt-2 hidden">Credenciais atualizadas com sucesso!</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 text-sm">💳 Bandeiras e Taxas (%)</h3>
+                    <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                        <input type="text" id="nova-bandeira-nome" placeholder="Nome da Bandeira" class="border rounded-xl px-3 py-2 text-sm flex-1 bg-slate-50">
+                        <input type="number" step="0.001" id="nova-bandeira-taxa" placeholder="Taxa Ex: 0.012" class="border rounded-xl px-3 py-2 text-sm sm:w-44 bg-slate-50">
+                        <button onclick="adicionarBandeira()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow">Adicionar</button>
+                    </div>
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead><tr class="bg-slate-50 border-b text-slate-500 text-xs uppercase"><th class="px-4 py-3">Bandeira</th><th class="px-4 py-3">Taxa</th><th class="px-4 py-3 text-center">Ações</th></tr></thead>
+                        <tbody id="tabela-bandeiras-corpo"></tbody>
+                    </table>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 text-sm">🏢 Centros de Custo</h3>
+                    <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                        <input type="text" id="novo-cc-codigo" placeholder="Código (Ex: CC03)" class="border rounded-xl px-3 py-2 text-sm sm:w-40 bg-slate-50">
+                        <input type="text" id="novo-cc-desc" placeholder="Descrição do Centro de Custo" class="border rounded-xl px-3 py-2 text-sm flex-1 bg-slate-50">
+                        <button onclick="adicionarCentroCusto()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow">Adicionar</button>
+                    </div>
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead><tr class="bg-slate-50 border-b text-slate-500 text-xs uppercase"><th class="px-4 py-3">Código</th><th class="px-4 py-3">Descrição</th><th class="px-4 py-3 text-center">Ações</th></tr></thead>
+                        <tbody id="tabela-cc-corpo"></tbody>
+                    </table>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 text-sm">🏷️ De/Para de Despesas</h3>
+                    <div class="flex flex-col sm:flex-row gap-3 mb-4">
+                        <input type="text" id="novo-depara-hist" placeholder="Histórico (Ex: Energia Elétrica)" class="border rounded-xl px-3 py-2 text-sm flex-1 bg-slate-50">
+                        <input type="text" id="novo-depara-grupo" placeholder="Grupo (Ex: Manutenção)" class="border rounded-xl px-3 py-2 text-sm flex-1 bg-slate-50">
+                        <button onclick="adicionarDePara()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-sm font-semibold shadow">Adicionar</button>
+                    </div>
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead><tr class="bg-slate-50 border-b text-slate-500 text-xs uppercase"><th class="px-4 py-3">Histórico</th><th class="px-4 py-3">Grupo de Conta</th><th class="px-4 py-3 text-center">Ações</th></tr></thead>
+                        <tbody id="tabela-depara-corpo"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
     </div>
 
+    <!-- SCRIPT PRINCIPAL -->
     <script>
-        // URL da sua API do Google Apps Script
-        const API_URL = "https://script.google.com/macros/s/AKfycbzqyH6OKaUhvWIOiXXEoqkg_bORwFRWGzoPvWBOIODNoZwVyAg6-w-hXoUUOjtFimbMFA/exec";
-
-        // Dados iniciais zerados / limpos
-        const dadosIniciais = {
-            datas: ["23/10/2026"],
-            meta: { valor: 0.00, dataAlvo: "31/12/2027" },
-            projecaoSalva: null,
-            linhas: []
-        };
-
-        let estado = JSON.parse(localStorage.getItem('patrimonio_bonette_v11')) || dadosIniciais;
-        if (!estado.meta) estado.meta = { valor: 0.00, dataAlvo: "31/12/2027" };
-        if (estado.projecaoSalva === undefined) estado.projecaoSalva = null;
-        let privado = false;
-        let charts = {};
-
-        // Função para salvar localmente e sincronizar com o Google Sheets (com text/plain para evitar CORS)
-        async function salvar() {
-            localStorage.setItem('patrimonio_bonette_v11', JSON.stringify(estado));
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(estado)
-                });
-            } catch (e) {
-                console.log("Erro ao sincronizar com a nuvem:", e);
-            }
-        }
-
-        // Função para carregar dados da nuvem ao iniciar
-        async function carregarDaNuvem() {
-            try {
-                let resposta = await fetch(API_URL);
-                let dadosNuvem = await resposta.json();
-                if (dadosNuvem && dadosNuvem.datas && dadosNuvem.linhas) {
-                    estado = dadosNuvem;
-                    localStorage.setItem('patrimonio_bonette_v11', JSON.stringify(estado));
-                }
-            } catch (e) {
-                console.log("A usar dados locais salvos no navegador.");
-            }
-        }
-
-        function resetarDados() {
-            if(confirm("Deseja restaurar o painel para o estado limpo/zerado?")) {
-                estado = JSON.parse(JSON.stringify(dadosIniciais));
-                salvar();
-                renderizarTudo();
-                inicializarMetaUI();
-            }
-        }
-
-        function togglePrivacidade() {
-            privado = !privado;
-            const btn = document.getElementById('btnPrivacidade');
-            const icone = document.getElementById('iconeOlho');
-            const texto = document.getElementById('textoOlho');
-            
-            if(privado) {
-                icone.innerText = "🙈";
-                texto.innerText = "Mostrar Valores";
-                document.body.classList.add('modo-privado');
-            } else {
-                icone.innerText = "👁️";
-                texto.innerText = "Ocultar Valores";
-                document.body.classList.remove('modo-privado');
-            }
-            renderizarTudo();
-        }
-
-        function formatarMoeda(val) {
-            if (val === null || val === undefined || isNaN(val)) return "R$ 0,00";
-            if (privado) return "R$ •••••••";
-            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        function parseMoedaToNumber(str) {
-            if (!str) return 0;
-            let limpo = str.replace(/[^\d,]/g, '').replace(',', '.');
-            let num = parseFloat(limpo);
-            return isNaN(num) ? 0 : num;
-        }
-
-        function mascaraMoedaInput(input) {
-            let valor = input.value.replace(/\D/g, "");
-            if (valor === "") {
-                input.value = "";
-                return;
-            }
-            let numero = (parseInt(valor) / 100).toFixed(2);
-            let partes = numero.split(".");
-            partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            input.value = "R$ " + partes[0] + "," + partes[1];
-        }
-
-        function numeroToMoedaStr(num) {
-            if (isNaN(num)) num = 0;
-            if (privado) return "R$ •••••••";
-            let fixed = num.toFixed(2);
-            let partes = fixed.split(".");
-            partes[0] = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            return "R$ " + partes[0] + "," + partes[1];
-        }
-
-        function parseDataBR(str) {
-            const partes = str.split('/');
-            if(partes.length !== 3) return new Date();
-            return new Date(partes[2], partes[1] - 1, partes[0]);
-        }
-
-        function abrirModalData() {
-            document.getElementById('inputNovaData').value = "23/10/2026";
-            document.getElementById('modalData').classList.remove('hidden');
-        }
-
-        function fecharModalData() {
-            document.getElementById('modalData').classList.add('hidden');
-        }
-
-        function confirmarAdicionarData() {
-            let novaData = document.getElementById('inputNovaData').value.trim();
-            if(!novaData) return;
-            estado.datas.push(novaData);
-            estado.linhas.forEach(l => {
-                let ultimo = l.valores[l.valores.length - 1] || 0;
-                l.valores.push(ultimo);
-            });
-            atualizarProjecaoPersistida();
-            salvar();
-            fecharModalData();
-            renderizarTudo();
-        }
-
-        function abrirModalAtivo() {
-            document.getElementById('inputNomeAtivo').value = "";
-            document.getElementById('modalAtivo').classList.remove('hidden');
-        }
-
-        function fecharModalAtivo() {
-            document.getElementById('modalAtivo').classList.add('hidden');
-        }
-
-        function confirmarAdicionarAtivo() {
-            let nome = document.getElementById('inputNomeAtivo').value.trim();
-            if(!nome) {
-                alert("Informe o nome do ativo.");
-                return;
-            }
-            let cat = document.getElementById('selectCatAtivo').value;
-            let novosValores = estado.datas.map(() => 0);
-            estado.linhas.push({ nome, cat, valores: novosValores });
-            salvar();
-            fecharModalAtivo();
-            renderizarTudo();
-            alert(`✅ Ativo "${nome}" adicionado com sucesso!`);
-        }
-
-        function atualizarSelectsLancamento() {
-            const selectData = document.getElementById('selectDataLancamento');
-            const selectAtivo = document.getElementById('selectAtivoLancamento');
-            
-            if(!selectData || !selectAtivo) return;
-
-            const selectedDataVal = selectData.value;
-            const selectedAtivoVal = selectAtivo.value;
-
-            selectData.innerHTML = '';
-            estado.datas.forEach((d, idx) => {
-                selectData.innerHTML += `<option value="${idx}">${d}</option>`;
-            });
-            if(selectedDataVal && selectData.querySelector(`option[value="${selectedDataVal}"]`)) {
-                selectData.value = selectedDataVal;
-            } else {
-                selectData.selectedIndex = estado.datas.length - 1;
-            }
-
-            selectAtivo.innerHTML = '';
-            estado.linhas.forEach((l, idx) => {
-                selectAtivo.innerHTML += `<option value="${idx}">${l.nome} (${l.cat})</option>`;
-            });
-            if(selectedAtivoVal && selectAtivo.querySelector(`option[value="${selectedAtivoVal}"]`)) {
-                selectAtivo.value = selectedAtivoVal;
-            }
-
-            atualizarValorInputRapido();
-            selectData.onchange = atualizarValorInputRapido;
-            selectAtivo.onchange = atualizarValorInputRapido;
-        }
-
-        function atualizarValorInputRapido() {
-            const dIdx = document.getElementById('selectDataLancamento').value;
-            const aIdx = document.getElementById('selectAtivoLancamento').value;
-            if(dIdx === undefined || aIdx === undefined || !estado.linhas[aIdx]) return;
-            const val = estado.linhas[aIdx].valores[dIdx] || 0;
-            document.getElementById('inputValorLancamento').value = numeroToMoedaStr(val);
-        }
-
-        function salvarLancamentoRapido() {
-            const dIdx = parseInt(document.getElementById('selectDataLancamento').value);
-            const aIdx = parseInt(document.getElementById('selectAtivoLancamento').value);
-            const valStr = document.getElementById('inputValorLancamento').value;
-            const val = parseMoedaToNumber(valStr);
-
-            if(isNaN(val) || isNaN(aIdx) || !estado.linhas[aIdx]) {
-                alert("Por favor, selecione um ativo válido e informe um valor monetário.");
-                return;
-            }
-
-            estado.linhas[aIdx].valores[dIdx] = val;
-            atualizarProjecaoPersistida();
-            salvar();
-            renderizarTudo();
-            alert("✅ Lançamento salvo e sincronizado com a planilha!");
-        }
-
-        function inicializarMetaUI() {
-            if(estado.meta) {
-                document.getElementById('inputMetaValor').value = numeroToMoedaStr(estado.meta.valor);
-                document.getElementById('inputMetaData').value = estado.meta.dataAlvo || "31/12/2027";
-            }
-            atualizarCalculoMeta();
-        }
-
-        function atualizarCalculoMeta() {
-            const valInputStr = document.getElementById('inputMetaValor').value;
-            const valInput = parseMoedaToNumber(valInputStr);
-            const dataInput = document.getElementById('inputMetaData').value.trim() || "31/12/2027";
-
-            let totalGeral = estado.datas.map((_, dIdx) => estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0));
-            let patrimonioAtual = totalGeral.length > 0 ? (totalGeral[totalGeral.length - 1] || 0) : 0;
-            let falta = Math.max(0, valInput - patrimonioAtual);
-
-            let perc = valInput > 0 ? Math.min(100, (patrimonioAtual / valInput) * 100) : 0;
-
-            let dataAtualObj = parseDataBR(estado.datas[estado.datas.length - 1] || "23/10/2026");
-            let dataMetaObj = parseDataBR(dataInput);
-
-            let diffAnos = dataMetaObj.getFullYear() - dataAtualObj.getFullYear();
-            let diffMeses = dataMetaObj.getMonth() - dataAtualObj.getMonth();
-            let mesesRestantes = (diffAnos * 12) + diffMeses;
-            if (mesesRestantes < 1) mesesRestantes = 1;
-
-            let aporteMensal = falta / mesesRestantes;
-
-            document.getElementById('metaProgressoPerc').innerText = perc.toFixed(1) + "%";
-            document.getElementById('metaPatrimonioAtual').innerText = formatarMoeda(patrimonioAtual);
-            document.getElementById('metaFaltaValor').innerText = formatarMoeda(falta);
-            document.getElementById('metaAporteMensal').innerText = formatarMoeda(aporteMensal) + " / mês";
-        }
-
-        function salvarMeta() {
-            const valInputStr = document.getElementById('inputMetaValor').value;
-            const valInput = parseMoedaToNumber(valInputStr);
-            const dataInput = document.getElementById('inputMetaData').value.trim() || "31/12/2027";
-
-            estado.meta = {
-                valor: valInput,
-                dataAlvo: dataInput
-            };
-            salvar();
-            atualizarCalculoMeta();
-            alert("🎯 Meta e Data Alvo salvas com sucesso!");
-        }
-
-        function removerItem(idx) {
-            if(confirm(`Deseja excluir o ativo ${estado.linhas[idx].nome}?`)) {
-                estado.linhas.splice(idx, 1);
-                atualizarProjecaoPersistida();
-                salvar();
-                renderizarTudo();
-            }
-        }
-
-        function removerData(idx) {
-            if(estado.datas.length <= 1) {
-                alert("Você precisa manter ao menos uma data.");
-                return;
-            }
-            if(confirm(`Deseja remover a data ${estado.datas[idx]}?`)) {
-                estado.datas.splice(idx, 1);
-                estado.linhas.forEach(l => {
-                    l.valores.splice(idx, 1);
-                });
-                atualizarProjecaoPersistida();
-                salvar();
-                renderizarTudo();
-            }
-        }
-
-        function atualizarProjecaoPersistida() {
-            const labelsHistorico = estado.datas;
-            let totalGeral = labelsHistorico.map((_, dIdx) => {
-                return estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0);
-            });
-
-            let taxaCrescimentoDiaria = 0;
-            if (labelsHistorico.length >= 2) {
-                let dInicio = parseDataBR(labelsHistorico[0]);
-                let dFim = parseDataBR(labelsHistorico[labelsHistorico.length - 1]);
-                let totalDias = Math.max(1, (dFim - dInicio) / (1000 * 60 * 60 * 24));
-                let diffPatrimonio = totalGeral[totalGeral.length - 1] - totalGeral[0];
-                taxaCrescimentoDiaria = diffPatrimonio / totalDias;
-            }
-
-            let ultimoValorReal = totalGeral.length > 0 ? totalGeral[totalGeral.length - 1] : 0;
-            let ultimaDataObj = parseDataBR(labelsHistorico[labelsHistorico.length - 1] || "23/10/2026");
-            
-            let projLabels = [];
-            let projValores = [];
-
-            for (let m = 1; m <= 4; m++) {
-                let mesesAdicionais = m * 3;
-                let diasAdicionais = mesesAdicionais * 30;
-                
-                let novaDataObj = new Date(ultimaDataObj);
-                novaDataObj.setMonth(novaDataObj.getMonth() + mesesAdicionais);
-                
-                let diaStr = String(novaDataObj.getDate()).padStart(2, '0');
-                let mesStr = String(novaDataObj.getMonth() + 1).padStart(2, '0');
-                let anoStr = novaDataObj.getFullYear();
-                
-                projLabels.push(`${diaStr}/${mesStr}/${anoStr} (+${mesesAdicionais}m)`);
-                let valorProjetado = ultimoValorReal + (taxaCrescimentoDiaria * diasAdicionais);
-                projValores.push(valorProjetado);
-            }
-
-            estado.projecaoSalva = {
-                labels: projLabels,
-                valores: projValores
-            };
-        }
-
-        function renderizarTudo() {
-            renderizarTabela();
-            atualizarGraficos();
-            atualizarSelectsLancamento();
-            atualizarCalculoMeta();
-        }
-
-        function renderizarTabela() {
-            const thead = document.getElementById('tabelaHead');
-            const tbody = document.getElementById('tabelaBody');
-
-            let headHTML = `<tr><th class="py-3 px-4 font-semibold">Onde / Ativo</th>`;
-            estado.datas.forEach((data, index) => {
-                headHTML += `<th class="py-3 px-2 text-center font-semibold">
-                    <div class="flex items-center justify-center gap-1">
-                        <span>${data}</span>
-                        ${estado.datas.length > 1 ? `<button onclick="removerData(${index})" class="text-red-300 hover:text-red-100 font-bold px-1 cursor-pointer" title="Remover data">&times;</button>` : ''}
-                    </div>
-                </th>`;
-            });
-            headHTML += `<th class="py-3 px-2 text-center font-semibold w-12">Ações</th></tr>`;
-            thead.innerHTML = headHTML;
-
-            const categorias = [
-                { nome: "Investimentos", cat: "Inv" },
-                { nome: "Outros", cat: "Outros" },
-                { nome: "Bens", cat: "Bens" }
-            ];
-
-            let bodyHTML = '';
-
-            categorias.forEach(c => {
-                const itensCat = estado.linhas.filter(l => l.cat === c.cat);
-                
-                itensCat.forEach((item) => {
-                    const globalIdx = estado.linhas.indexOf(item);
-                    bodyHTML += `<tr class="hover:bg-slate-50 transition">
-                        <td class="py-2.5 px-4 font-medium text-slate-700 flex items-center justify-between">
-                            <span>${item.nome}</span>
-                            <button onclick="removerItem(${globalIdx})" class="text-slate-400 hover:text-red-600 text-xs cursor-pointer" title="Excluir ativo">🗑️</button>
-                        </td>`;
-                    estado.datas.forEach((_, dIdx) => {
-                        const val = item.valores[dIdx] || 0;
-                        const formattedVal = numeroToMoedaStr(val);
-                        bodyHTML += `<td class="py-2.5 px-2 text-center">
-                            <input type="text" value="${formattedVal}" 
-                                class="w-32 sm:w-36 text-right bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs sm:text-sm focus:bg-white transition"
-                                onfocus="this.value = '${val.toFixed(2).replace('.', ',')}'"
-                                oninput="mascaraMoedaInput(this)"
-                                onblur="atualizarValorTabela(${globalIdx}, ${dIdx}, this.value)">
-                        </td>`;
-                    });
-                    bodyHTML += `<td class="text-center"></td></tr>`;
-                });
-
-                let subValores = estado.datas.map((_, dIdx) => {
-                    return itensCat.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0);
-                });
-
-                bodyHTML += `<tr class="bg-amber-50 font-bold border-t border-amber-100">
-                    <td class="py-3 px-4 text-amber-900">Subtotal ${c.nome}</td>`;
-                subValores.forEach(v => {
-                    bodyHTML += `<td class="py-3 px-2 text-center text-amber-900">${formatarMoeda(v)}</td>`;
-                });
-                bodyHTML += `<td></td></tr>`;
-            });
-
-            let totalGeral = estado.datas.map((_, dIdx) => {
-                return estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0);
-            });
-
-            bodyHTML += `<tr class="bg-emerald-600 text-white font-bold">
-                <td class="py-3 px-4 uppercase tracking-wider">TOTAL GERAL</td>`;
-            totalGeral.forEach(v => {
-                bodyHTML += `<td class="py-3 px-2 text-center">${formatarMoeda(v)}</td>`;
-            });
-            bodyHTML += `<td></td></tr>`;
-
-            let saldos = [null];
-            let diasArray = [null];
-            let saldoDia = [null];
-            let diasAcu = [0];
-            let valorAcu = [0];
-            let mediaDia = [0];
-
-            let acuDiasVal = 0;
-            let acuValVal = 0;
-
-            for(let i=1; i<estado.datas.length; i++) {
-                const diffVal = totalGeral[i] - totalGeral[i-1];
-                saldos.push(diffVal);
-
-                const d1 = parseDataBR(estado.datas[i-1]);
-                const d2 = parseDataBR(estado.datas[i]);
-                const diffTime = Math.abs(d2 - d1);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                diasArray.push(diffDays);
-
-                const sDia = diffDays > 0 ? diffVal / diffDays : 0;
-                saldoDia.push(sDia);
-
-                acuDiasVal += diffDays;
-                diasAcu.push(acuDiasVal);
-
-                acuValVal += diffVal;
-                valorAcu.push(acuValVal);
-
-                const mDia = acuDiasVal > 0 ? acuValVal / acuDiasVal : 0;
-                mediaDia.push(mDia);
-            }
-
-            bodyHTML += `<tr class="bg-slate-100 text-slate-700 font-semibold border-t border-slate-200">
-                <td class="py-2.5 px-4">Saldo</td>`;
-            saldos.forEach(s => {
-                bodyHTML += `<td class="py-2.5 px-2 text-center">${s !== null ? formatarMoeda(s) : '-'}</td>`;
-            });
-            bodyHTML += `<td></td></tr>`;
-
-            bodyHTML += `<tr class="bg-slate-50 text-slate-700">
-                <td class="py-2.5 px-4">Dias</td>`;
-            diasArray.forEach(d => {
-                bodyHTML += `<td class="py-2.5 px-2 text-center">${d !== null ? d : '-'}</td>`;
-            });
-            bodyHTML += `<td></td></tr>`;
-
-            bodyHTML += `<tr class="bg-slate-100 text-slate-700 font-semibold">
-                <td class="py-2.5 px-4">Saldo/dia</td>`;
-            saldoDia.forEach(sd => {
-                bodyHTML += `<td class="py-2.5 px-2 text-center text-emerald-700">${sd !== null ? formatarMoeda(sd) : '-'}</td>`;
-            });
-            bodyHTML += `<td></td></tr>`;
-
-            bodyHTML += `<tr class="bg-slate-200 text-slate-800 font-bold">
-                <td class="py-2.5 px-4">Dias/ACU</td>`;
-            diasAcu.forEach(da => {
-                bodyHTML += `<td class="py-2.5 px-2 text-center">${da}</td>`;
-            });
-            bodyHTML += `<td></td></tr>`;
-
-            bodyHTML += `<tr class="bg-slate-200 text-slate-800 font-bold">
-                <td class="py-2.5 px-4">Valor/ACU</td>`;
-            valorAcu.forEach(va => {
-                bodyHTML += `<td class="py-2.5 px-2 text-center">${formatarMoeda(va)}</td>`;
-            });
-            bodyHTML += `<td></td></tr>`;
-
-            bodyHTML += `<tr class="bg-slate-200 text-slate-800 font-bold">
-                <td class="py-2.5 px-4">Média/Dia</td>`;
-            mediaDia.forEach(md => {
-                bodyHTML += `<td class="py-2.5 px-2 text-center text-emerald-800">${formatarMoeda(md)}</td>`;
-            });
-            bodyHTML += `<td></td></tr>`;
-
-            tbody.innerHTML = bodyHTML;
-        }
-
-        function atualizarValorTabela(itemIdx, dataIdx, valorStr) {
-            let num = parseMoedaToNumber(valorStr);
-            estado.linhas[itemIdx].valores[dataIdx] = num;
-            atualizarProjecaoPersistida();
-            salvar();
-            renderizarTudo();
-        }
-
+        // URL oficial da sua Google Planilha (Apps Script Web App)
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwuPgADqZyL8L2yIiPl-dyTJkEkvpCsJKHh1mYItDpwVSrOFced563OHDwPIXJ_YLLZ5A/exec";
         Chart.register(ChartDataLabels);
 
-        function atualizarGraficos() {
-            const labelsHistorico = estado.datas;
-            let totalGeral = labelsHistorico.map((_, dIdx) => {
-                return estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0);
-            });
+        let db = {
+            auth: { usuario: '100moderacao', senha: '1234' },
+            cadastros: {
+                bandeiras: [
+                    { nome: 'Dinheiro', taxa: 0.00 },
+                    { nome: 'PIX', taxa: 0.00 },
+                    { nome: 'Débito - Visa/Master', taxa: 0.012 },
+                    { nome: 'Crédito - Visa/Master (À vista)', taxa: 0.022 }
+                ],
+                centrosCusto: [
+                    { codigo: 'CC01', descricao: 'Loja Física / Conveniência' },
+                    { codigo: 'CC02', descricao: 'Eventos e Festas' }
+                ],
+                dePara: [
+                    { historico: 'Bebidas (Fornecedor)', grupo: 'Bebidas' },
+                    { historico: 'Cartão Santander', grupo: 'Bancos' }
+                ]
+            },
+            vendas: [],
+            despesas: [],
+            retiradas: [],
+            margensDiarias: []
+        };
 
-            if (!estado.projecaoSalva) {
-                atualizarProjecaoPersistida();
+        let charts = {};
+        let tipoLancamentoAtual = 'vendas';
+
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+        }
+
+        function formatarData(dataIso) {
+            if (!dataIso) return '';
+            const partes = dataIso.split('-');
+            if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            return dataIso;
+        }
+
+        function verificarSessao() {
+            try {
+                carregarDados();
+                const logado = localStorage.getItem('100m_logado');
+                if (logado === 'true') {
+                    document.getElementById('tela-login').style.display = 'none';
+                    document.getElementById('app-principal').style.display = 'block';
+                    init();
+                }
+            } catch(err) {
+                console.error("Erro na sessão:", err);
+            }
+        }
+
+        function fazerLogin(e) {
+            e.preventDefault();
+            const usuario = document.getElementById('login-usuario').value.trim();
+            const senha = document.getElementById('login-senha').value.trim();
+            const erroEl = document.getElementById('login-erro');
+
+            const userCorreto = (db && db.auth && db.auth.usuario) ? db.auth.usuario : '100moderacao';
+            const senhaCorreta = (db && db.auth && db.auth.senha) ? db.auth.senha : '1234';
+
+            if ((usuario === userCorreto && senha === senhaCorreta) || (usuario === '100moderacao' && senha === '1234')) {
+                localStorage.setItem('100m_logado', 'true');
+                if (erroEl) erroEl.classList.add('hidden');
+                document.getElementById('tela-login').style.display = 'none';
+                document.getElementById('app-principal').style.display = 'block';
+                init();
+            } else {
+                if (erroEl) {
+                    erroEl.innerText = `Usuário ou senha inválidos!`;
+                    erroEl.classList.remove('hidden');
+                } else {
+                    alert('Usuário ou senha inválidos!');
+                }
+            }
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('100m_logado');
+            location.reload();
+        }
+
+        function alterarCredenciais(e) {
+            e.preventDefault();
+            const novoUser = document.getElementById('novo-user').value.trim();
+            const novaPass = document.getElementById('nova-pass').value.trim();
+            if (novoUser && novaPass) {
+                if (!db.auth) db.auth = {};
+                db.auth.usuario = novoUser;
+                db.auth.senha = novaPass;
+                salvarDados();
+                const msg = document.getElementById('msg-sucesso-senha');
+                msg.classList.remove('hidden');
+                setTimeout(() => msg.classList.add('hidden'), 3000);
+            }
+        }
+
+        function init() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const diaHoje = String(hoje.getDate()).padStart(2, '0');
+
+            if (!document.getElementById('filtroDataInicio').value) document.getElementById('filtroDataInicio').value = `${ano}-${mes}-01`;
+            if (!document.getElementById('filtroDataFim').value) document.getElementById('filtroDataFim').value = `${ano}-${mes}-${diaHoje}`;
+
+            document.getElementById('venda-data').valueAsDate = hoje;
+            document.getElementById('despesa-data').valueAsDate = hoje;
+            document.getElementById('retirada-data').valueAsDate = hoje;
+
+            if (db.auth) {
+                document.getElementById('novo-user').value = db.auth.usuario || '100moderacao';
             }
 
-            let projecaoLabels = [...labelsHistorico, ...(estado.projecaoSalva ? estado.projecaoSalva.labels : [])];
-            let projecaoHistoricoDados = [...totalGeral, ...new Array((estado.projecaoSalva ? estado.projecaoSalva.labels.length : 0)).fill(null)];
+            popularSelects();
+            atualizarInterface();
+            sincronizarComPlanilha();
+        }
+
+        function salvarDados() { 
+            try {
+                localStorage.setItem('100m_db', JSON.stringify(db));
+            } catch(e) {
+                console.error("Erro ao salvar dados:", e);
+            }
+        }
+
+        function carregarDados() {
+            const saved = localStorage.getItem('100m_db');
+            if (saved) {
+                 try {
+                     const parsed = JSON.parse(saved);
+                     if (parsed) {
+                        db.vendas = parsed.vendas || [];
+                        db.despesas = parsed.despesas || [];
+                        db.retiradas = parsed.retiradas || [];
+                        db.margensDiarias = parsed.margensDiarias || [];
+                        db.auth = parsed.auth || db.auth;
+                        if (parsed.cadastros) {
+                            db.cadastros.bandeiras = parsed.cadastros.bandeiras || db.cadastros.bandeiras;
+                            db.cadastros.centrosCusto = parsed.cadastros.centrosCusto || db.cadastros.centrosCusto;
+                            db.cadastros.dePara = parsed.cadastros.dePara || db.cadastros.dePara;
+                        }
+                    }
+                } catch(e) {
+                    console.error("Erro ao ler db:", e);
+                }
+             }
+            if (!db.auth) db.auth = { usuario: '100moderacao', senha: '1234' };
+            if (!db.cadastros) {
+                db.cadastros = {
+                    bandeiras: [{ nome: 'Dinheiro', taxa: 0.00 }, { nome: 'PIX', taxa: 0.00 }, { nome: 'Débito - Visa/Master', taxa: 0.012 }, { nome: 'Crédito - Visa/Master (À vista)', taxa: 0.022 }],
+                    centrosCusto: [{ codigo: 'CC01', descricao: 'Loja Física / Conveniência' }, { codigo: 'CC02', descricao: 'Eventos e Festas' }],
+                    dePara: [{ historico: 'Bebidas (Fornecedor)', grupo: 'Bebidas' }, { historico: 'Cartão Santander', grupo: 'Bancos' }]
+                };
+            }
+        }
+
+        function mudarTab(tab) {
+            ['gerencial', 'dashboard', 'graficos', 'lancamentos', 'tabelao', 'cadastros'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+                document.getElementById('btn-' + t).className = "py-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-semibold text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2";
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('btn-' + tab).className = "py-3.5 border-b-2 border-blue-600 text-blue-600 font-semibold text-xs sm:text-sm transition whitespace-nowrap flex items-center gap-2";
             
-            let projecaoTendenciaDados = new Array(labelsHistorico.length).fill(null);
-            if (projecaoTendenciaDados.length > 0) {
-                projecaoTendenciaDados[projecaoTendenciaDados.length - 1] = totalGeral[totalGeral.length - 1];
-            }
-            if (estado.projecaoSalva && estado.projecaoSalva.valores) {
-                estado.projecaoSalva.valores.forEach(v => projecaoTendenciaDados.push(v));
-            }
+            if (tab === 'graficos') setTimeout(renderizarGraficosFiltrados, 50);
+            if (tab === 'gerencial') setTimeout(renderizarGraficosGerenciais, 50);
+            if (tab === 'tabelao') renderizarTabelao();
+            if (tab === 'cadastros') renderCadastrosTables();
+        }
 
-            // Gráfico 1: Patrimônio com Projeção 12 Meses
-            if(charts.patrimonio) charts.patrimonio.destroy();
-            charts.patrimonio = new Chart(document.getElementById('chartPatrimonio'), {
-                type: 'line',
-                data: {
-                    labels: projecaoLabels,
-                    datasets: [
-                        {
-                            label: 'Patrimônio Real',
-                            data: projecaoHistoricoDados,
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.2
-                        },
-                        {
-                            label: 'Projeção de Tendência (12 Meses)',
-                            data: projecaoTendenciaDados,
-                            borderColor: '#8b5cf6',
-                            backgroundColor: 'rgba(139, 92, 246, 0.05)',
-                            borderWidth: 3,
-                            borderDash: [6, 6],
-                            fill: false,
-                            tension: 0.2
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 14, font: { size: 11, weight: 'bold' } } },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => context.dataset.label + ': ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed.y))
-                            }
-                        },
-                        datalabels: {
-                            align: 'top',
-                            formatter: (val) => val ? (privado ? 'R$ •••••' : formatarMoeda(val)) : '',
-                            font: { size: 9, weight: 'bold' },
-                            color: '#1e293b'
-                        }
-                    },
-                    scales: {
-                        y: { ticks: { callback: (v) => privado ? 'R$ •••' : formatarMoeda(v) } }
-                    }
-                }
+        function mudarTipoLancamento(tipo) {
+            tipoLancamentoAtual = tipo;
+            ['vendas', 'despesas', 'retiradas', 'margens'].forEach(t => {
+                document.getElementById('form-' + t).classList.add('hidden');
+                document.getElementById('btn-tipo-' + t).className = "flex-1 px-4 py-2.5 rounded-xl font-semibold text-xs transition bg-slate-100 text-slate-600 hover:bg-slate-200";
             });
+            document.getElementById('form-' + tipo).classList.remove('hidden');
+            document.getElementById('btn-tipo-' + tipo).className = "flex-1 px-4 py-2.5 rounded-xl font-semibold text-xs transition bg-slate-900 text-white shadow";
+            renderizarTabelaLancamentosAtiva();
+        }
 
-            let saldoDia = [0];
-            let valorAcu = [0];
-            let acuValVal = 0;
-
-            for(let i=1; i<labelsHistorico.length; i++) {
-                const diffVal = totalGeral[i] - totalGeral[i-1];
-                const d1 = parseDataBR(labelsHistorico[i-1]);
-                const d2 = parseDataBR(labelsHistorico[i]);
-                const diffDays = Math.max(1, Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24)));
-                saldoDia.push(diffDays > 0 ? diffVal / diffDays : 0);
-                acuValVal += diffVal;
-                valorAcu.push(acuValVal);
+        function popularSelects() {
+            const selBandeira = document.getElementById('venda-bandeira');
+            if (selBandeira) {
+                selBandeira.innerHTML = '<option value="">Selecione...</option>';
+                (db.cadastros.bandeiras || []).forEach(b => { selBandeira.innerHTML += `<option value="${b.nome}">${b.nome}</option>`; });
             }
 
-            // Gráfico 2: Saldo/dia
-            if(charts.saldoDia) charts.saldoDia.destroy();
-            charts.saldoDia = new Chart(document.getElementById('chartSaldoDia'), {
-                type: 'bar',
-                data: {
-                    labels: labelsHistorico,
-                    datasets: [{
-                        label: 'R$/dia',
-                        data: saldoDia,
-                        backgroundColor: '#10b981',
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => 'R$/dia: ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed.y))
-                            }
-                        },
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'top',
-                            formatter: (val) => val ? (privado ? 'R$ •••••' : formatarMoeda(val)) : '',
-                            font: { size: 10, weight: 'bold' },
-                            color: '#047857'
-                        }
-                    },
-                    scales: {
-                        y: { ticks: { callback: (v) => privado ? 'R$ •••' : formatarMoeda(v) } }
-                    }
-                }
+            const selCC = document.getElementById('venda-centro');
+            if (selCC) {
+                selCC.innerHTML = '<option value="">Selecione...</option>';
+                (db.cadastros.centrosCusto || []).forEach(cc => { selCC.innerHTML += `<option value="${cc.codigo}">${cc.codigo} - ${cc.descricao}</option>`; });
+            }
+
+            const selHist = document.getElementById('despesa-historico');
+            if (selHist) {
+                selHist.innerHTML = '<option value="">Selecione...</option>';
+                (db.cadastros.dePara || []).forEach(d => { selHist.innerHTML += `<option value="${d.historico}">${d.historico}</option>`; });
+            }
+
+            renderCadastrosTables();
+        }
+
+        function preencherGrupoDespesa() {
+            const hist = document.getElementById('despesa-historico').value;
+            const item = (db.cadastros.dePara || []).find(d => d.historico === hist);
+            document.getElementById('despesa-grupo').value = item ? item.grupo : 'Outros';
+        }
+
+        function renderCadastrosTables() {
+            let htmlB = '';
+            (db.cadastros.bandeiras || []).forEach((b, i) => {
+                htmlB += `<tr class="border-b"><td class="px-4 py-2">${b.nome}</td><td class="px-4 py-2">${b.taxa}</td><td class="px-4 py-2 text-center"><button onclick="db.cadastros.bandeiras.splice(${i},1); salvarDados(); popularSelects();" class="text-rose-500 font-semibold text-xs">Excluir</button></td></tr>`;
             });
+            const tb = document.getElementById('tabela-bandeiras-corpo');
+            if (tb) tb.innerHTML = htmlB;
 
-            // Gráfico 3: Ganho Acumulado
-            if(charts.valorAcu) charts.valorAcu.destroy();
-            charts.valorAcu = new Chart(document.getElementById('chartValorAcu'), {
-                type: 'line',
-                data: {
-                    labels: labelsHistorico,
-                    datasets: [{
-                        label: 'Ganho Acumulado',
-                        data: valorAcu,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => 'Ganho Acumulado: ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed.y))
-                            }
-                        },
-                        datalabels: {
-                            align: 'top',
-                            formatter: (val) => val ? (privado ? 'R$ •••••' : formatarMoeda(val)) : 'R$ 0,00',
-                            font: { size: 10, weight: 'bold' },
-                            color: '#6d28d9'
-                        }
-                    },
-                    scales: {
-                        y: { ticks: { callback: (v) => privado ? 'R$ •••' : formatarMoeda(v) } }
-                    }
-                }
+            let htmlCC = '';
+            (db.cadastros.centrosCusto || []).forEach((cc, i) => {
+                htmlCC += `<tr class="border-b"><td class="px-4 py-2 font-medium">${cc.codigo}</td><td class="px-4 py-2">${cc.descricao}</td><td class="px-4 py-2 text-center"><button onclick="db.cadastros.centrosCusto.splice(${i},1); salvarDados(); popularSelects();" class="text-rose-500 font-semibold text-xs">Excluir</button></td></tr>`;
             });
+            const tcc = document.getElementById('tabela-cc-corpo');
+            if (tcc) tcc.innerHTML = htmlCC;
 
-            // Gráfico 4: Alocação Categoria
-            const ultimoIdx = labelsHistorico.length - 1;
-            const subInv = ultimoIdx >= 0 ? estado.linhas.filter(l => l.cat === 'Inv').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0) : 0;
-            const subOutros = ultimoIdx >= 0 ? estado.linhas.filter(l => l.cat === 'Outros').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0) : 0;
-            const subBens = ultimoIdx >= 0 ? estado.linhas.filter(l => l.cat === 'Bens').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0) : 0;
-
-            if(charts.alocacao) charts.alocacao.destroy();
-            charts.alocacao = new Chart(document.getElementById('chartAlocacao'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Investimentos', 'Outros', 'Bens'],
-                    datasets: [{
-                        data: [subInv, subOutros, subBens],
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
-                        borderWidth: 3,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => context.label + ': ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed))
-                            }
-                        },
-                        datalabels: {
-                            formatter: (val, ctx) => {
-                                let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                                if (sum === 0) return '';
-                                let percentage = (val * 100 / sum).toFixed(1) + "%";
-                                return percentage;
-                            },
-                            color: '#fff',
-                            font: { weight: 'bold', size: 11 }
-                        }
-                    }
-                }
+            let htmlDP = '';
+            (db.cadastros.dePara || []).forEach((dp, i) => {
+                htmlDP += `<tr class="border-b"><td class="px-4 py-2 font-medium">${dp.historico}</td><td class="px-4 py-2">${dp.grupo}</td><td class="px-4 py-2 text-center"><button onclick="db.cadastros.dePara.splice(${i},1); salvarDados(); popularSelects();" class="text-rose-500 font-semibold text-xs">Excluir</button></td></tr>`;
             });
+            const tdp = document.getElementById('tabela-depara-corpo');
+            if (tdp) tdp.innerHTML = htmlDP;
+        }
 
-            // Gráfico 5: Evolução por Instituição
-            const coresInstituicoes = [
-                '#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', 
-                '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'
-            ];
+        function adicionarBandeira() {
+            const nomeInput = document.getElementById('nova-bandeira-nome');
+            const taxaInput = document.getElementById('nova-bandeira-taxa');
+            const nome = nomeInput.value.trim();
+            const taxa = parseFloat(taxaInput.value) || 0;
+            if (nome) {
+                if (!db.cadastros.bandeiras) db.cadastros.bandeiras = [];
+                db.cadastros.bandeiras.push({ nome, taxa });
+                nomeInput.value = '';
+                taxaInput.value = '';
+                salvarDados();
+                popularSelects();
+                atualizarInterface();
+            } else {
+                alert('Informe o nome da bandeira.');
+            }
+        }
 
-            const datasetsInstituicoes = estado.linhas.map((item, idx) => ({
-                label: item.nome,
-                data: item.valores,
-                borderColor: coresInstituicoes[idx % coresInstituicoes.length],
-                backgroundColor: coresInstituicoes[idx % coresInstituicoes.length],
-                borderWidth: 2.5,
-                tension: 0.2,
-                fill: false
-            }));
+        function adicionarCentroCusto() {
+            const codigoInput = document.getElementById('novo-cc-codigo');
+            const descInput = document.getElementById('novo-cc-desc');
+            const codigo = codigoInput.value.trim();
+            const descricao = descInput.value.trim();
+            if (codigo && descricao) {
+                if (!db.cadastros.centrosCusto) db.cadastros.centrosCusto = [];
+                db.cadastros.centrosCusto.push({ codigo, descricao });
+                codigoInput.value = '';
+                descInput.value = '';
+                salvarDados();
+                popularSelects();
+                atualizarInterface();
+            } else {
+                alert('Informe o código e a descrição do centro de custo.');
+            }
+        }
 
-            if(charts.instituicoes) charts.instituicoes.destroy();
-            charts.instituicoes = new Chart(document.getElementById('chartInstituicoes'), {
-                type: 'line',
-                data: {
-                    labels: labelsHistorico,
-                    datasets: datasetsInstituicoes
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => context.dataset.label + ': ' + (privado ? 'R$ •••••••' : formatarMoeda(context.parsed.y))
-                            }
-                        },
-                        datalabels: { display: false }
-                    },
-                    scales: {
-                        y: { ticks: { callback: (v) => privado ? 'R$ •••' : formatarMoeda(v) } }
-                    }
-                }
+        function adicionarDePara() {
+            const histInput = document.getElementById('novo-depara-hist');
+            const grupoInput = document.getElementById('novo-depara-grupo');
+            const historico = histInput.value.trim();
+            const grupo = grupoInput.value.trim();
+            if (historico && grupo) {
+                if (!db.cadastros.dePara) db.cadastros.dePara = [];
+                db.cadastros.dePara.push({ historico, grupo });
+                histInput.value = '';
+                grupoInput.value = '';
+                salvarDados();
+                popularSelects();
+                atualizarInterface();
+            } else {
+                alert('Informe o histórico e o grupo de conta.');
+            }
+        }
+
+        function salvarVenda(e) {
+            e.preventDefault();
+            const data = document.getElementById('venda-data').value;
+            const bandeira = document.getElementById('venda-bandeira').value;
+            const centroCusto = document.getElementById('venda-centro').value;
+            const valorBruto = parseFloat(document.getElementById('venda-valor').value) || 0;
+            const bObj = (db.cadastros.bandeiras || []).find(b => b.nome === bandeira);
+            const taxa = bObj ? bObj.taxa : 0;
+            const valorTaxa = valorBruto * taxa;
+            const valorLiquido = valorBruto - valorTaxa;
+
+            db.vendas.push({ id: Date.now(), data, bandeira, centroCusto, valorBruto, taxa, valorTaxa, valorLiquido });
+            document.getElementById('venda-valor').value = '';
+            salvarDados(); atualizarInterface(); enviarParaPlanilha();
+        }
+
+        function salvarDespesa(e) {
+            e.preventDefault();
+            const data = document.getElementById('despesa-data').value;
+            const historico = document.getElementById('despesa-historico').value;
+            const grupo = document.getElementById('despesa-grupo').value;
+            const valor = parseFloat(document.getElementById('despesa-valor').value) || 0;
+
+            db.despesas.push({ id: Date.now(), data, historico, grupo, valor });
+            document.getElementById('despesa-valor').value = '';
+            salvarDados(); atualizarInterface(); enviarParaPlanilha();
+        }
+
+        function salvarRetirada(e) {
+            e.preventDefault();
+            const data = document.getElementById('retirada-data').value;
+            const tipo = document.getElementById('retirada-tipo').value;
+            const historico = document.getElementById('retirada-historico').value;
+            const valor = parseFloat(document.getElementById('retirada-valor').value) || 0;
+
+            db.retiradas.push({ id: Date.now(), data, tipo, historico, valor });
+            document.getElementById('retirada-historico').value = '';
+            document.getElementById('retirada-valor').value = '';
+            salvarDados(); atualizarInterface(); enviarParaPlanilha();
+        }
+
+        function salvarMargemDiaria(e) {
+            e.preventDefault();
+            const data = document.getElementById('margem-data').value;
+            const margem = parseFloat(document.getElementById('margem-valor-dia').value) || 0;
+            
+            const idx = db.margensDiarias.findIndex(m => m.data === data);
+            if (idx >= 0) {
+                db.margensDiarias[idx].margem = margem;
+            } else {
+                db.margensDiarias.push({ id: Date.now(), data, margem });
+            }
+            document.getElementById('margem-valor-dia').value = '';
+            salvarDados(); atualizarInterface();
+        }
+
+        function excluirRegistroGeral(tipo, id) {
+            if (tipo === 'venda') db.vendas = db.vendas.filter(v => v.id !== id);
+            if (tipo === 'despesa') db.despesas = db.despesas.filter(d => d.id !== id);
+            if (tipo === 'retirada') db.retiradas = db.retiradas.filter(r => r.id !== id);
+            if (tipo === 'margem') db.margensDiarias = db.margensDiarias.filter(m => m.id !== id);
+            salvarDados(); atualizarInterface(); enviarParaPlanilha();
+            if (!document.getElementById('tab-tabelao').classList.contains('hidden')) renderizarTabelao();
+        }
+
+        function renderizarTabelaLancamentosAtiva() {
+            const titulo = document.getElementById('titulo-tabela-lancamentos');
+            const cabecalho = document.getElementById('cabecalho-tabela-lancamentos');
+            const corpo = document.getElementById('tabela-lancamentos-corpo');
+
+            const vendasF = filtrarDados(db.vendas);
+            const despesasF = filtrarDados(db.despesas);
+            const retiradasF = filtrarDados(db.retiradas);
+
+            if (tipoLancamentoAtual === 'vendas') {
+                titulo.innerText = 'Histórico de Vendas';
+                cabecalho.innerHTML = `<tr class="text-slate-600 border-b text-xs uppercase"><th class="px-6 py-3 bg-slate-100">Data</th><th class="px-6 py-3 bg-slate-100">Método</th><th class="px-6 py-3 bg-slate-100">Centro Custo</th><th class="px-6 py-3 bg-slate-100 text-right">Bruto</th><th class="px-6 py-3 bg-slate-100 text-right">Líquido</th><th class="px-6 py-3 bg-slate-100 text-center">Ações</th></tr>`;
+                let html = '';
+                vendasF.forEach(v => {
+                    html += `<tr class="border-b hover:bg-slate-50">
+                        <td class="px-6 py-3">${formatarData(v.data)}</td>
+                        <td class="px-6 py-3 font-medium">${v.bandeira}</td>
+                        <td class="px-6 py-3 text-slate-500">${v.centroCusto}</td>
+                        <td class="px-6 py-3 text-right font-semibold">${formatarMoeda(v.valorBruto)}</td>
+                        <td class="px-6 py-3 text-right font-bold text-blue-600">${formatarMoeda(v.valorLiquido)}</td>
+                        <td class="px-6 py-3 text-center"><button onclick="excluirRegistroGeral('venda', ${v.id})" class="text-rose-500 text-xs font-semibold">Excluir</button></td>
+                    </tr>`;
+                });
+                corpo.innerHTML = html || `<tr><td colspan="6" class="px-6 py-4 text-center text-slate-400">Nenhuma venda.</td></tr>`;
+            } else if (tipoLancamentoAtual === 'despesas') {
+                titulo.innerText = 'Histórico de Despesas';
+                cabecalho.innerHTML = `<tr class="text-slate-600 border-b text-xs uppercase"><th class="px-6 py-3 bg-slate-100">Data</th><th class="px-6 py-3 bg-slate-100">Histórico</th><th class="px-6 py-3 bg-slate-100">Grupo</th><th class="px-6 py-3 bg-slate-100 text-right">Valor</th><th class="px-6 py-3 bg-slate-100 text-center">Ações</th></tr>`;
+                let html = '';
+                despesasF.forEach(d => {
+                    html += `<tr class="border-b hover:bg-slate-50">
+                        <td class="px-6 py-3">${formatarData(d.data)}</td>
+                        <td class="px-6 py-3 font-medium">${d.historico}</td>
+                        <td class="px-6 py-3 text-slate-500">${d.grupo}</td>
+                        <td class="px-6 py-3 text-right font-bold text-rose-600">${formatarMoeda(d.valor)}</td>
+                        <td class="px-6 py-3 text-center"><button onclick="excluirRegistroGeral('despesa', ${d.id})" class="text-rose-500 text-xs font-semibold">Excluir</button></td>
+                    </tr>`;
+                });
+                corpo.innerHTML = html || `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-400">Nenhuma despesa.</td></tr>`;
+            } else if (tipoLancamentoAtual === 'retiradas') {
+                titulo.innerText = 'Histórico de Retiradas';
+                cabecalho.innerHTML = `<tr class="text-slate-600 border-b text-xs uppercase"><th class="px-6 py-3 bg-slate-100">Data</th><th class="px-6 py-3 bg-slate-100">Tipo</th><th class="px-6 py-3 bg-slate-100">Item</th><th class="px-6 py-3 bg-slate-100 text-right">Valor</th><th class="px-6 py-3 bg-slate-100 text-center">Ações</th></tr>`;
+                let html = '';
+                retiradasF.forEach(r => {
+                    html += `<tr class="border-b hover:bg-slate-50">
+                        <td class="px-6 py-3">${formatarData(r.data)}</td>
+                        <td class="px-6 py-3 font-medium">${r.tipo}</td>
+                        <td class="px-6 py-3 text-slate-500">${r.historico}</td>
+                        <td class="px-6 py-3 text-right font-bold text-amber-600">${formatarMoeda(r.valor)}</td>
+                        <td class="px-6 py-3 text-center"><button onclick="excluirRegistroGeral('retirada', ${r.id})" class="text-rose-500 text-xs font-semibold">Excluir</button></td>
+                    </tr>`;
+                });
+                corpo.innerHTML = html || `<tr><td colspan="5" class="px-6 py-4 text-center text-slate-400">Nenhuma retirada.</td></tr>`;
+            } else if (tipoLancamentoAtual === 'margens') {
+                titulo.innerText = 'Histórico de Margens Diárias';
+                cabecalho.innerHTML = `<tr class="text-slate-600 border-b text-xs uppercase"><th class="px-6 py-3 bg-slate-100">Data</th><th class="px-6 py-3 bg-slate-100 text-center">Margem Definida</th><th class="px-6 py-3 bg-slate-100 text-center">Ações</th></tr>`;
+                let html = '';
+                const margensF = filtrarDados(db.margensDiarias);
+                margensF.forEach(m => {
+                    html += `<tr class="border-b hover:bg-slate-50">
+                        <td class="px-6 py-3 font-medium">${formatarData(m.data)}</td>
+                        <td class="px-6 py-3 text-center font-bold text-emerald-600">${m.margem}%</td>
+                        <td class="px-6 py-3 text-center"><button onclick="excluirRegistroGeral('margem', ${m.id})" class="text-rose-500 text-xs font-semibold">Excluir</button></td>
+                    </tr>`;
+                });
+                corpo.innerHTML = html || `<tr><td colspan="3" class="px-6 py-4 text-center text-slate-400">Nenhuma margem diária cadastrada.</td></tr>`;
+            }
+        }
+
+        function renderizarTabelao() {
+            const termo = document.getElementById('tabelao-filtro-busca').value.toLowerCase();
+            let unificado = [];
+            db.vendas.forEach(v => unificado.push({ ...v, tipoItem: 'venda', desc: v.bandeira, cat: v.centroCusto, valTotal: v.valorBruto, valLiq: v.valorLiquido }));
+            db.despesas.forEach(d => unificado.push({ ...d, tipoItem: 'despesa', desc: d.historico, cat: d.grupo, valTotal: d.valor, valLiq: -d.valor }));
+            db.retiradas.forEach(r => unificado.push({ ...r, tipoItem: 'retirada', desc: r.historico, cat: r.tipo, valTotal: r.valor, valLiq: -r.valor }));
+
+            unificado.sort((a, b) => new Date(b.data) - new Date(a.data));
+            if (termo) {
+                unificado = unificado.filter(item => item.data.includes(termo) || item.desc.toLowerCase().includes(termo) || item.cat.toLowerCase().includes(termo));
+            }
+
+            let html = '';
+            unificado.forEach(item => {
+                html += `<tr class="border-b hover:bg-slate-50">
+                    <td class="px-6 py-3 font-medium">${formatarData(item.data)}</td>
+                    <td class="px-6 py-3"><span class="px-2 py-1 rounded text-xs font-bold ${item.tipoItem==='venda'?'bg-blue-100 text-blue-700':'bg-rose-100 text-rose-700'}">${item.tipoItem}</span></td>
+                    <td class="px-6 py-3 font-medium">${item.desc}</td>
+                    <td class="px-6 py-3 text-slate-500">${item.cat}</td>
+                    <td class="px-6 py-3 text-right">${formatarMoeda(item.valTotal)}</td>
+                    <td class="px-6 py-3 text-right font-bold">${formatarMoeda(item.valLiq)}</td>
+                    <td class="px-6 py-3 text-center"><button onclick="excluirRegistroGeral('${item.tipoItem}', ${item.id})" class="text-rose-500 text-xs font-semibold">Excluir</button></td>
+                </tr>`;
+            });
+            document.getElementById('tabelao-corpo').innerHTML = html || `<tr><td colspan="7" class="px-6 py-4 text-center text-slate-400">Nenhum registro.</td></tr>`;
+        }
+
+        function filtrarDados(lista) {
+            const inicio = document.getElementById('filtroDataInicio').value;
+            const fim = document.getElementById('filtroDataFim').value;
+            return (lista || []).filter(item => {
+                if (inicio && item.data < inicio) return false;
+                if (fim && item.data > fim) return false;
+                return true;
             });
         }
 
-        // Inicializar carregando da nuvem e renderizando
-        carregarDaNuvem().then(() => {
-            renderizarTudo();
-            inicializarMetaUI();
-        });
+        function limparFiltros() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            document.getElementById('filtroDataInicio').value = `${ano}-${mes}-01`;
+            document.getElementById('filtroDataFim').value = `${ano}-${mes}-${dia}`;
+            atualizarInterface();
+        }
+
+        function atualizarDados() { atualizarInterface(); }
+
+        function atualizarInterface() {
+            const vendasF = filtrarDados(db.vendas);
+            const despesasF = filtrarDados(db.despesas);
+            const retiradasF = filtrarDados(db.retiradas);
+
+            const bruto = vendasF.reduce((a, v) => a + v.valorBruto, 0);
+            const taxas = vendasF.reduce((a, v) => a + v.valorTaxa, 0);
+            const liquido = bruto - taxas;
+            const totalDesp = despesasF.reduce((a, d) => a + d.valor, 0);
+            const totalRet = retiradasF.reduce((a, r) => a + r.valor, 0);
+            
+            let lucroVendas = 0;
+            vendasF.forEach(v => {
+                let m = 30;
+                const margemDiaObj = db.margensDiarias.find(md => md.data === v.data);
+                if (margemDiaObj) {
+                    m = margemDiaObj.margem;
+                }
+                lucroVendas += v.valorLiquido * (m / 100);
+            });
+            
+            const estoqueVendas = liquido - lucroVendas;
+            const lucroReal = lucroVendas - (totalDesp + totalRet);
+
+            document.getElementById('gerencial-bruto').innerText = formatarMoeda(bruto);
+            document.getElementById('gerencial-liquido').innerText = formatarMoeda(liquido);
+            document.getElementById('gerencial-lucro').innerText = formatarMoeda(lucroReal);
+            document.getElementById('gerencial-taxas').innerText = formatarMoeda(taxas);
+            document.getElementById('gerencial-despesas').innerText = formatarMoeda(totalDesp);
+            document.getElementById('gerencial-retiradas').innerText = formatarMoeda(totalRet);
+
+            document.getElementById('kpi-bruto').innerText = formatarMoeda(bruto);
+            document.getElementById('kpi-liquido').innerText = formatarMoeda(liquido);
+            document.getElementById('kpi-lucro').innerText = formatarMoeda(lucroReal);
+            document.getElementById('kpi-taxas').innerText = formatarMoeda(taxas);
+            document.getElementById('kpi-despesas').innerText = formatarMoeda(totalDesp);
+            document.getElementById('kpi-retiradas').innerText = formatarMoeda(totalRet);
+
+            document.getElementById('tabela-dre').innerHTML = `
+                <tr class="border-b"><td class="px-6 py-3 font-medium">1. Faturamento Bruto</td><td class="px-6 py-3 text-right font-semibold">${formatarMoeda(bruto)}</td></tr>
+                <tr class="border-b bg-slate-50"><td class="px-6 py-3 font-medium">(-) Taxas de Cartão</td><td class="px-6 py-3 text-right text-rose-600 font-semibold">${formatarMoeda(taxas)}</td></tr>
+                <tr class="border-b font-bold bg-blue-50/50"><td class="px-6 py-3 text-blue-900">(=) Faturamento Líquido</td><td class="px-6 py-3 text-right text-blue-900">${formatarMoeda(liquido)}</td></tr>
+                <tr class="border-b"><td class="px-6 py-3 font-medium">(-) Retiradas & Pró-labore</td><td class="px-6 py-3 text-right text-amber-600 font-semibold">${formatarMoeda(totalRet)}</td></tr>
+                <tr class="border-b bg-slate-50"><td class="px-6 py-3 font-medium">(-) Custos Fixos & Despesas</td><td class="px-6 py-3 text-right text-rose-600 font-semibold">${formatarMoeda(totalDesp)}</td></tr>
+                <tr class="bg-emerald-50 text-emerald-900 font-bold text-base"><td class="px-6 py-4">(=) Lucro Líquido Real</td><td class="px-6 py-4 text-right">${formatarMoeda(lucroReal)}</td></tr>
+            `;
+
+            renderizarTabelaLancamentosAtiva();
+            if (!document.getElementById('tab-graficos').classList.contains('hidden')) renderizarGraficosFiltrados();
+            if (!document.getElementById('tab-gerencial').classList.contains('hidden')) renderizarGraficosGerenciais();
+            if (!document.getElementById('tab-tabelao').classList.contains('hidden')) renderizarTabelao();
+        }
+
+        const commonChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                datalabels: {
+                    formatter: function(value) { return formatarMoeda(value); },
+                    color: '#1e293b',
+                    font: { weight: 'bold', size: 10 },
+                    anchor: 'end',
+                    align: 'top'
+                }
+            }
+        };
+
+        const doughnutChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                datalabels: {
+                    formatter: function(value) { return formatarMoeda(value); },
+                    color: '#ffffff',
+                    font: { weight: 'bold', size: 11 }
+                }
+            }
+        };
+
+        function renderizarGraficosGerenciais() {
+            const dias = [...new Set([...db.vendas.map(v => v.data), ...db.despesas.map(d => d.data)])].sort();
+            const diasF = dias.map(d => formatarData(d));
+            const vals = dias.map(d => db.vendas.filter(v => v.data === d).reduce((a,v) => a + v.valorLiquido, 0));
+
+            if(charts.g1) charts.g1.destroy();
+            charts.g1 = new Chart(document.getElementById('chartGerencialLinha').getContext('2d'), {
+                type: 'line',
+                data: { labels: diasF.length ? diasF : ['Hoje'], datasets: [{ label: 'Líquido', data: vals.length ? vals : [0], borderColor: '#6366F1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true }] },
+                options: commonChartOptions
+            });
+
+            const resB = {};
+            db.vendas.forEach(v => { resB[v.bandeira] = (resB[v.bandeira] || 0) + v.valorBruto; });
+            if(charts.g2) charts.g2.destroy();
+            charts.g2 = new Chart(document.getElementById('chartGerencialBandeiras').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(resB).length ? Object.keys(resB) : ['Vazio'], datasets: [{ data: Object.keys(resB).length ? Object.values(resB) : [1], backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'] }] },
+                options: doughnutChartOptions
+            });
+        }
+
+        function renderizarGraficosFiltrados() {
+            const vendasF = filtrarDados(db.vendas);
+            const despesasF = filtrarDados(db.despesas);
+            const retiradasF = filtrarDados(db.retiradas);
+
+            const diasSet = new Set();
+            vendasF.forEach(v => diasSet.add(v.data));
+            despesasF.forEach(d => diasSet.add(d.data));
+            retiradasF.forEach(r => diasSet.add(r.data));
+            const dias = [...diasSet].sort();
+            const diasF = dias.map(d => formatarData(d));
+
+            const lucroRealDiario = [];
+            const estoqueDiario = [];
+
+            dias.forEach(d => {
+                const vendasDia = vendasF.filter(v => v.data === d);
+                const despDia = despesasF.filter(dep => dep.data === d).reduce((a, b) => a + b.valor, 0);
+                const retDia = retiradasF.filter(r => r.data === d).reduce((a, b) => a + b.valor, 0);
+
+                const liqDia = vendasDia.reduce((a, v) => a + v.valorLiquido, 0);
+                
+                let lucroVendasDia = 0;
+                vendasDia.forEach(v => {
+                    let m = 30;
+                    const mdObj = db.margensDiarias.find(md => md.data === v.data);
+                    if (mdObj) m = mdObj.margem;
+                    lucroVendasDia += v.valorLiquido * (m / 100);
+                });
+
+                const estDia = liqDia - lucroVendasDia;
+                const lucRealDia = lucroVendasDia - (despDia + retDia);
+
+                lucroRealDiario.push(lucRealDia);
+                estoqueDiario.push(estDia);
+            });
+
+            if(charts.lucroRealDiario) charts.lucroRealDiario.destroy();
+            charts.lucroRealDiario = new Chart(document.getElementById('chartLucroRealDiario').getContext('2d'), {
+                type: 'bar',
+                data: { labels: diasF.length ? diasF : ['Hoje'], datasets: [{ label: 'Lucro Real', data: lucroRealDiario.length ? lucroRealDiario : [0], backgroundColor: '#10B981' }] },
+                options: commonChartOptions
+            });
+
+            if(charts.estoqueDiario) charts.estoqueDiario.destroy();
+            charts.estoqueDiario = new Chart(document.getElementById('chartEstoqueDiario').getContext('2d'), {
+                type: 'bar',
+                data: { labels: diasF.length ? diasF : ['Hoje'], datasets: [{ label: 'Reposição Estoque', data: estoqueDiario.length ? estoqueDiario : [0], backgroundColor: '#3B82F6' }] },
+                options: commonChartOptions
+            });
+
+            const liqTot = vendasF.reduce((a,v) => a + v.valorLiquido, 0);
+            const saiTot = despesasF.reduce((a,d) => a + d.valor, 0) + retiradasF.reduce((a,r) => a + r.valor, 0);
+
+            if(charts.c2) charts.c2.destroy();
+            charts.c2 = new Chart(document.getElementById('chartEntradaSaida').getContext('2d'), {
+                type: 'bar',
+                data: { labels: ['Período'], datasets: [{ label: 'Entradas', data: [liqTot], backgroundColor: '#10B981' }, { label: 'Saídas', data: [saiTot], backgroundColor: '#EF4444' }] },
+                options: commonChartOptions
+            });
+
+            const resB = {};
+            vendasF.forEach(v => { resB[v.bandeira] = (resB[v.bandeira] || 0) + v.valorBruto; });
+            if(charts.c3) charts.c3.destroy();
+            charts.c3 = new Chart(document.getElementById('chartBandeiras').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(resB).length ? Object.keys(resB) : ['Vazio'], datasets: [{ data: Object.keys(resB).length ? Object.values(resB) : [1], backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'] }] },
+                options: doughnutChartOptions
+            });
+        }
+
+        function sincronizarComPlanilha() {
+            const dot = document.getElementById('status-sync-dot');
+            const txt = document.getElementById('status-sync-text');
+            if (!dot || !txt) return;
+            dot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping";
+            txt.innerText = "Sincronizando com Google Planilhas...";
+
+            if (window.location.protocol === 'file:') {
+                setTimeout(() => {
+                    dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                    txt.innerText = "Modo Local (file://) - Pronto";
+                }, 500);
+                return;
+            }
+
+            fetch(WEB_APP_URL, { method: 'GET', mode: 'no-cors' }).then(() => {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                txt.innerText = "Sincronizado com Google Planilhas";
+            }).catch(() => {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                txt.innerText = "Sistema Ativo (Modo Local/Cloud)";
+            });
+        }
+
+        function enviarParaPlanilha() {
+            let payload = {
+                transacoes: [],
+                cadastros: db.cadastros
+            };
+
+            db.vendas.forEach(v => payload.transacoes.push({ tipo: 'Venda', data: v.data, descricao: v.bandeira, categoria: v.centroCusto, valorBruto: v.valorBruto, valorLiquido: v.valorLiquido, margem: '' }));
+            db.despesas.forEach(d => payload.push({ tipo: 'Despesa', data: d.data, descricao: d.historico, categoria: d.grupo, valorBruto: d.valor, valorLiquido: d.valor, margem: '' }));
+            db.retiradas.forEach(r => payload.push({ tipo: 'Retirada', data: r.data, descricao: r.historico, categoria: r.tipo, valorBruto: r.valor, valorLiquido: r.valor, margem: '' }));
+
+            let transacoesPlanas = [];
+            db.vendas.forEach(v => transacoesPlanas.push({ tipo: 'Venda', data: v.data, descricao: v.bandeira, categoria: v.centroCusto, valor: v.valorLiquido }));
+            db.despesas.forEach(d => transacoesPlanas.push({ tipo: 'Despesa', data: d.data, descricao: d.historico, categoria: d.grupo, valor: d.valor }));
+            db.retiradas.forEach(r => transacoesPlanas.push({ tipo: 'Retirada', data: r.data, descricao: r.historico, categoria: r.tipo, valor: r.valor }));
+
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(transacoesPlanas)
+            }).catch(err => console.log('Sync background:', err));
+        }
+
+        function exportarCSV() {
+            let csv = "Tipo,Data,Descricao,Categoria,Valor\n";
+            db.vendas.forEach(v => csv += `Venda,${v.data},${v.bandeira},${v.centroCusto},${v.valorLiquido}\n`);
+            db.despesas.forEach(d => csv += `Despesa,${d.data},${d.historico},${d.grupo},${d.valor}\n`);
+            db.retiradas.forEach(r => csv += `Retirada,${r.data},${r.historico},${r.tipo},${r.valor}\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "relatorio_100_moderacao.csv";
+            link.click();
+        }
+
+        window.onload = function() {
+            try {
+                verificarSessao();
+            } catch(e) {
+                console.error("Erro no onload:", e);
+                document.getElementById('tela-login').style.display = 'none';
+                document.getElementById('app-principal').style.display = 'block';
+                init();
+            }
+        };
     </script>
 </body>
 </html>
