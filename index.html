@@ -51,7 +51,7 @@
                 <button onclick="abrirModalData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
                     <span>📅</span> Adicionar Data
                 </button>
-                <button onclick="resetarDados()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer" title="Restaurar padrão">
+                <button onclick="resetarDados()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-2xl text-xs font-semibold transition cursor-pointer" title="Restaurar padrão limpo">
                     🔄
                 </button>
             </div>
@@ -126,7 +126,7 @@
                     <h4 id="metaPatrimonioAtual" class="text-xl font-black text-white mt-1">R$ 0,00</h4>
                 </div>
                 <div class="bg-white/5 border border-white/10 p-4 rounded-2xl">
-                    <span class="text-xs text-slate-400 font-semibold">Falta Faltante (Gap)</span>
+                    <span class="text-xs text-slate-400 font-semibold">Falta (Gap)</span>
                     <h4 id="metaFaltaValor" class="text-xl font-black text-amber-400 mt-1">R$ 0,00</h4>
                 </div>
                 <div class="bg-emerald-500/20 border border-emerald-500/30 p-4 rounded-2xl">
@@ -142,8 +142,8 @@
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between lg:col-span-2">
                 <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900">Evolução do Patrimônio & Tendência (Próximos 12 Meses)</h3>
-                        <p class="text-xs text-slate-500">Histórico real comparado com a linha de projeção futura persistida</p>
+                        <h3 class="text-sm font-bold text-slate-900">Evolução do Patrimônio & Tendência</h3>
+                        <p class="text-xs text-slate-500">Histórico real comparado com a linha de projeção futura</p>
                     </div>
                     <span class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-xl shadow-sm">Projeção Futura 📈</span>
                 </div>
@@ -205,7 +205,7 @@
             </div>
         </div>
 
-        <!-- Tabela Completa (Abaixo dos Gráficos para Consulta) -->
+        <!-- Tabela Completa -->
         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center">
                 <h3 class="text-sm font-bold text-slate-900">Planilha Consolidada de Ativos</h3>
@@ -227,8 +227,8 @@
     <div id="modalData" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
             <h3 class="text-lg font-bold text-slate-900">Adicionar Nova Data</h3>
-            <p class="text-xs text-slate-500">Insira a data no formato DD/MM/AAAA (ex: 20/10/2026)</p>
-            <input type="text" id="inputNovaData" placeholder="20/10/2026" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold focus:bg-white transition">
+            <p class="text-xs text-slate-500">Insira a data no formato DD/MM/AAAA (ex: 23/10/2026)</p>
+            <input type="text" id="inputNovaData" placeholder="23/10/2026" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold focus:bg-white transition">
             <div class="flex justify-end gap-2 pt-2">
                 <button onclick="fecharModalData()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition cursor-pointer">Cancelar</button>
                 <button onclick="confirmarAdicionarData()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold transition cursor-pointer">Adicionar</button>
@@ -262,41 +262,57 @@
     </div>
 
     <script>
+        // URL da sua API do Google Apps Script (Correta e religada)
+        const API_URL = "https://script.google.com/macros/s/AKfycbzqyH6OKaUhvWIOiXXEoqkg_bORwFRWGzoPvWBOIODNoZwVyAg6-w-hXoUUOjtFimbMFA/exec";
+
+        // Dados iniciais zerados / limpos
         const dadosIniciais = {
-            datas: ["10/07/2026", "13/07/2026", "23/07/2026", "28/09/2026", "30/09/2026", "06/10/2026", "13/10/2026"],
-            meta: { valor: 1000000.00, dataAlvo: "31/12/2027" },
+            datas: ["23/10/2026"],
+            meta: { valor: 0.00, dataAlvo: "31/12/2027" },
             projecaoSalva: null,
-            linhas: [
-                { nome: "Brasil", cat: "Inv", valores: [46000.00, 46025.00, 46204.04, 49242.99, 49290.01, 49884.40, 49980.03] },
-                { nome: "Mercado", cat: "Inv", valores: [1176.00, 1177.52, 1192.30, 316.14, 323.42, 333.31, 333.92] },
-                { nome: "Nu", cat: "Inv", valores: [6100.00, 6102.55, 8435.18, 3559.72, 3563.87, 3572.20, 3580.55] },
-                { nome: "C6", cat: "Inv", valores: [1100.00, 1105.31, 1110.06, 727.38, 728.13, 729.64, 731.16] },
-                { nome: "BITI", cat: "Inv", valores: [300.00, 353.12, 363.04, 635.68, 647.41, 632.87, 615.98] },
-                
-                { nome: "LE", cat: "Outros", valores: [5000.00, 5000.00, 3000.00, 3000.00, 3000.00, 3000.00, 3000.00] },
-                { nome: "Thyado", cat: "Outros", valores: [4000.00, 4000.00, 4000.00, 4000.00, 4000.00, 4000.00, 4000.00] },
-                
-                { nome: "Carro", cat: "Bens", valores: [115000.00, 115000.00, 115000.00, 115000.00, 115000.00, 115000.00, 115000.00] },
-                { nome: "Lote", cat: "Bens", valores: [60000.00, 60000.00, 60000.00, 60000.00, 60000.00, 60000.00, 60000.00] },
-                { nome: "FGTS", cat: "Bens", valores: [147837.21, 147837.21, 147837.21, 151787.96, 151787.96, 151787.96, 151787.96] }
-            ]
+            linhas: []
         };
 
         let estado = JSON.parse(localStorage.getItem('patrimonio_bonette_v11')) || dadosIniciais;
-        if (!estado.meta) estado.meta = { valor: 1000000.00, dataAlvo: "31/12/2027" };
+        if (!estado.meta) estado.meta = { valor: 0.00, dataAlvo: "31/12/2027" };
         if (estado.projecaoSalva === undefined) estado.projecaoSalva = null;
         let privado = false;
         let charts = {};
 
-        function salvar() {
+        // Função para salvar localmente e sincronizar com o Google Sheets
+        async function salvar() {
             localStorage.setItem('patrimonio_bonette_v11', JSON.stringify(estado));
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(estado)
+                });
+            } catch (e) {
+                console.log("Erro ao sincronizar com a nuvem:", e);
+            }
+        }
+
+        // Função para carregar dados da nuvem ao iniciar
+        async function carregarDaNuvem() {
+            try {
+                let resposta = await fetch(API_URL);
+                let dadosNuvem = await resposta.json();
+                if (dadosNuvem && dadosNuvem.datas && dadosNuvem.linhas) {
+                    estado = dadosNuvem;
+                    localStorage.setItem('patrimonio_bonette_v11', JSON.stringify(estado));
+                }
+            } catch (e) {
+                console.log("A usar dados locais salvos no navegador.");
+            }
         }
 
         function resetarDados() {
-            if(confirm("Deseja restaurar os dados originais?")) {
+            if(confirm("Deseja restaurar o painel para o estado limpo/zerado?")) {
                 estado = JSON.parse(JSON.stringify(dadosIniciais));
                 salvar();
                 renderizarTudo();
+                inicializarMetaUI();
             }
         }
 
@@ -359,7 +375,7 @@
         }
 
         function abrirModalData() {
-            document.getElementById('inputNovaData').value = "20/10/2026";
+            document.getElementById('inputNovaData').value = "23/10/2026";
             document.getElementById('modalData').classList.remove('hidden');
         }
 
@@ -440,7 +456,7 @@
         function atualizarValorInputRapido() {
             const dIdx = document.getElementById('selectDataLancamento').value;
             const aIdx = document.getElementById('selectAtivoLancamento').value;
-            if(dIdx === undefined || aIdx === undefined) return;
+            if(dIdx === undefined || aIdx === undefined || !estado.linhas[aIdx]) return;
             const val = estado.linhas[aIdx].valores[dIdx] || 0;
             document.getElementById('inputValorLancamento').value = numeroToMoedaStr(val);
         }
@@ -451,8 +467,8 @@
             const valStr = document.getElementById('inputValorLancamento').value;
             const val = parseMoedaToNumber(valStr);
 
-            if(isNaN(val)) {
-                alert("Por favor, informe um valor monetário válido.");
+            if(isNaN(val) || isNaN(aIdx) || !estado.linhas[aIdx]) {
+                alert("Por favor, selecione um ativo válido e informe um valor monetário.");
                 return;
             }
 
@@ -460,7 +476,7 @@
             atualizarProjecaoPersistida();
             salvar();
             renderizarTudo();
-            alert("✅ Lançamento e projeção salvos com sucesso!");
+            alert("✅ Lançamento salvo e sincronizado com a planilha!");
         }
 
         function inicializarMetaUI() {
@@ -477,12 +493,12 @@
             const dataInput = document.getElementById('inputMetaData').value.trim() || "31/12/2027";
 
             let totalGeral = estado.datas.map((_, dIdx) => estado.linhas.reduce((acc, curr) => acc + (curr.valores[dIdx] || 0), 0));
-            let patrimonioAtual = totalGeral[totalGeral.length - 1] || 0;
+            let patrimonioAtual = totalGeral.length > 0 ? (totalGeral[totalGeral.length - 1] || 0) : 0;
             let falta = Math.max(0, valInput - patrimonioAtual);
 
             let perc = valInput > 0 ? Math.min(100, (patrimonioAtual / valInput) * 100) : 0;
 
-            let dataAtualObj = parseDataBR(estado.datas[estado.datas.length - 1]);
+            let dataAtualObj = parseDataBR(estado.datas[estado.datas.length - 1] || "23/10/2026");
             let dataMetaObj = parseDataBR(dataInput);
 
             let diffAnos = dataMetaObj.getFullYear() - dataAtualObj.getFullYear();
@@ -552,8 +568,8 @@
                 taxaCrescimentoDiaria = diffPatrimonio / totalDias;
             }
 
-            let ultimoValorReal = totalGeral[totalGeral.length - 1];
-            let ultimaDataObj = parseDataBR(labelsHistorico[labelsHistorico.length - 1]);
+            let ultimoValorReal = totalGeral.length > 0 ? totalGeral[totalGeral.length - 1] : 0;
+            let ultimaDataObj = parseDataBR(labelsHistorico[labelsHistorico.length - 1] || "23/10/2026");
             
             let projLabels = [];
             let projValores = [];
@@ -756,14 +772,18 @@
                 atualizarProjecaoPersistida();
             }
 
-            let projecaoLabels = [...labelsHistorico, ...estado.projecaoSalva.labels];
-            let projecaoHistoricoDados = [...totalGeral, ...new Array(estado.projecaoSalva.labels.length).fill(null)];
+            let projecaoLabels = [...labelsHistorico, ...(estado.projecaoSalva ? estado.projecaoSalva.labels : [])];
+            let projecaoHistoricoDados = [...totalGeral, ...new Array((estado.projecaoSalva ? estado.projecaoSalva.labels.length : 0)).fill(null)];
             
             let projecaoTendenciaDados = new Array(labelsHistorico.length).fill(null);
-            projecaoTendenciaDados[projecaoTendenciaDados.length - 1] = totalGeral[totalGeral.length - 1];
-            estado.projecaoSalva.valores.forEach(v => projecaoTendenciaDados.push(v));
+            if (projecaoTendenciaDados.length > 0) {
+                projecaoTendenciaDados[projecaoTendenciaDados.length - 1] = totalGeral[totalGeral.length - 1];
+            }
+            if (estado.projecaoSalva && estado.projecaoSalva.valores) {
+                estado.projecaoSalva.valores.forEach(v => projecaoTendenciaDados.push(v));
+            }
 
-            // Gráfico 1: Patrimônio com Projeção 12 Meses Persistida
+            // Gráfico 1: Patrimônio com Projeção 12 Meses
             if(charts.patrimonio) charts.patrimonio.destroy();
             charts.patrimonio = new Chart(document.getElementById('chartPatrimonio'), {
                 type: 'line',
@@ -780,7 +800,7 @@
                             tension: 0.2
                         },
                         {
-                            label: 'Projeção de Tendência (12 Meses Persistida)',
+                            label: 'Projeção de Tendência (12 Meses)',
                             data: projecaoTendenciaDados,
                             borderColor: '#8b5cf6',
                             backgroundColor: 'rgba(139, 92, 246, 0.05)',
@@ -906,9 +926,9 @@
 
             // Gráfico 4: Alocação Categoria
             const ultimoIdx = labelsHistorico.length - 1;
-            const subInv = estado.linhas.filter(l => l.cat === 'Inv').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0);
-            const subOutros = estado.linhas.filter(l => l.cat === 'Outros').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0);
-            const subBens = estado.linhas.filter(l => l.cat === 'Bens').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0);
+            const subInv = ultimoIdx >= 0 ? estado.linhas.filter(l => l.cat === 'Inv').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0) : 0;
+            const subOutros = ultimoIdx >= 0 ? estado.linhas.filter(l => l.cat === 'Outros').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0) : 0;
+            const subBens = ultimoIdx >= 0 ? estado.linhas.filter(l => l.cat === 'Bens').reduce((acc, curr) => acc + (curr.valores[ultimoIdx] || 0), 0) : 0;
 
             if(charts.alocacao) charts.alocacao.destroy();
             charts.alocacao = new Chart(document.getElementById('chartAlocacao'), {
@@ -935,6 +955,7 @@
                         datalabels: {
                             formatter: (val, ctx) => {
                                 let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                if (sum === 0) return '';
                                 let percentage = (val * 100 / sum).toFixed(1) + "%";
                                 return percentage;
                             },
@@ -987,8 +1008,11 @@
             });
         }
 
-        renderizarTudo();
-        inicializarMetaUI();
+        // Inicializar carregando da nuvem e renderizando
+        carregarDaNuvem().then(() => {
+            renderizarTudo();
+            inicializarMetaUI();
+        });
     </script>
 </body>
 </html>
